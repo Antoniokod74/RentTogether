@@ -45,7 +45,7 @@ const Profile = () => {
       }
 
       // Формируем URL для скачивания PDF договора
-      const url = `http://localhost:5000/api/contracts/booking/${bookingId}/download`;
+      const url = `/api/contracts/booking/${bookingId}/download`;
       console.log('📥 Скачивание договора по URL:', url);
       
       // Используем fetch для скачивания PDF
@@ -195,7 +195,7 @@ const Profile = () => {
           throw new Error('Токен отсутствует');
         }
 
-        const response = await fetch('http://localhost:5000/api/users/profile', {
+        const response = await fetch('/api/users/profile', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -308,7 +308,7 @@ const Profile = () => {
             throw new Error('Токен отсутствует');
           }
 
-          const response = await fetch('http://localhost:5000/api/bookings/my', {
+          const response = await fetch('/api/bookings/my', {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -391,7 +391,7 @@ const Profile = () => {
 
       console.log('📤 Отправляемые данные:', requestData);
 
-      const response = await fetch('http://localhost:5000/api/users/profile', {
+      const response = await fetch('/api/users/profile', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

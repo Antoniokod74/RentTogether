@@ -90,7 +90,7 @@ const AddCar = () => {
     });
 
     const token = localStorage.getItem('token');
-    const response = await fetch(`http://localhost:5000/api/cars/${carId}/photos`, {
+    const response = await fetch(`/api/cars/${carId}/photos`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -113,7 +113,7 @@ const AddCar = () => {
     try {
       const token = localStorage.getItem('token');
       
-      const carResponse = await fetch('http://localhost:5000/api/cars', {
+      const carResponse = await fetch('/api/cars', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -130,7 +130,7 @@ const CarDetails = () => {
         setLoading(true);
         
         // Загружаем данные автомобиля
-        const response = await fetch(`http://localhost:5000/api/cars/${id}`);
+        const response = await fetch(`/api/cars/${id}`);
         if (!response.ok) {
           throw new Error('Ошибка загрузки данных автомобиля');
         }
@@ -138,14 +138,14 @@ const CarDetails = () => {
         setCar(data.car);
         
         // Загружаем фотографии автомобиля
-        const photosResponse = await fetch(`http://localhost:5000/api/cars/${id}/photos`);
+        const photosResponse = await fetch(`/api/cars/${id}/photos`);
         if (photosResponse.ok) {
           const photosData = await photosResponse.json();
           setPhotos(photosData.photos || []);
         }
 
         // Загружаем бронирования автомобиля
-        const bookingsResponse = await fetch(`http://localhost:5000/api/cars/${id}/bookings`);
+        const bookingsResponse = await fetch(`/api/cars/${id}/bookings`);
         if (bookingsResponse.ok) {
           const bookingsData = await bookingsResponse.json();
           console.log('📅 Бронирования из API:', bookingsData.bookings);
@@ -381,7 +381,7 @@ const CarDetails = () => {
 
       const token = localStorage.getItem('token');
       
-      const response = await fetch('http://localhost:5000/api/bookings', {
+      const response = await fetch('/api/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -401,7 +401,7 @@ const CarDetails = () => {
       setBookingSuccess(true);
       
       // Обновляем список бронирований
-      const bookingsResponse = await fetch(`http://localhost:5000/api/cars/${id}/bookings`);
+      const bookingsResponse = await fetch(`/api/cars/${id}/bookings`);
       if (bookingsResponse.ok) {
         const bookingsData = await bookingsResponse.json();
         setBookings(bookingsData.bookings || []);
