@@ -1557,7 +1557,7 @@ app.get('/api/test/db', async (req, res) => {
 app.use((error, req, res, next) => {
   if (error instanceof multer.MulterError) {
     if (error.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ error: 'Файуцул слишком большой. Максимальный размер 5MB.' });
+      return res.status(400).json({ error: 'Файл слишком большой. Максимальный размер 5MB.' });
     }
   }
   next(error);
