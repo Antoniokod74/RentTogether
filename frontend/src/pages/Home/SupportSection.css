@@ -1,0 +1,310 @@
+.support-section {
+  background: #000000;
+  padding: 60px 0;
+  color: #ffffff;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.support-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.support-header h2 {
+  font-size: 2.2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #ffffff;
+}
+
+.support-subtitle {
+  font-size: 1.1rem;
+  color: #cccccc;
+  line-height: 1.6;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.support-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+.contacts-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.contacts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.contact-card {
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.contact-card:hover {
+  border-color: #555;
+  transform: translateY(-2px);
+}
+
+.contact-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.contact-icon-wrapper {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #222;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.contact-icon {
+  width: 24px;
+  height: 24px;
+  color: #00ff88;
+}
+
+.contact-info {
+  flex: 1;
+}
+
+.contact-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  color: #ffffff;
+}
+
+.contact-value {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #00ff88;
+  margin-bottom: 0.5rem;
+}
+
+.contact-availability {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+.availability-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.contact-btn {
+  width: 100%;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.contact-btn.phone {
+  background: #00ff88;
+  color: #000;
+}
+
+.contact-btn.phone:hover {
+  background: #00cc66;
+}
+
+.contact-btn.telegram {
+  background: #0088cc;
+  color: #fff;
+}
+
+.contact-btn.telegram:hover {
+  background: #006699;
+}
+
+.contact-btn.email {
+  background: #333;
+  color: #fff;
+  border: 2px solid #555;
+}
+
+.contact-btn.email:hover {
+  background: #444;
+}
+
+.emergency-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.emergency-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #ff4444;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.emergency-btn:hover {
+  background: #cc3333;
+}
+
+.emergency-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.office-btn {
+  padding: 1rem;
+  background: transparent;
+  color: #00ff88;
+  border: 2px solid #00ff88;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.office-btn:hover {
+  background: #00ff88;
+  color: #000;
+}
+
+.support-stats {
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 2rem;
+  height: fit-content;
+}
+
+.stats-card h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #ffffff;
+}
+
+.features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 2rem;
+}
+
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+}
+
+.feature-check {
+  width: 20px;
+  height: 20px;
+  color: #00ff88;
+  flex-shrink: 0;
+  margin-top: 0.2rem;
+}
+
+.feature-content {
+  flex: 1;
+}
+
+.feature-content h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  color: #ffffff;
+}
+
+.feature-description {
+  color: #00ff88;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.feature-details {
+  color: #ccc;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.feature-item:not(:last-child) {
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #222;
+}
+
+.rating-section {
+  text-align: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid #333;
+}
+
+.rating-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+  color: #ffd700;
+}
+
+.star-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.rating-text {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.rating-subtitle {
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+/* Убрана мобильная адаптивность */

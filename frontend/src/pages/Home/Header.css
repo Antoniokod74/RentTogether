@@ -1,0 +1,237 @@
+.header {
+  background: #000000;
+  box-shadow: 0 1px 3px rgba(255, 255, 255, 0.1);
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  padding: 0.2rem 0;
+  border-bottom: 1px solid #333;
+}
+
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  text-decoration: none;
+  color: inherit;
+}
+
+.logo h1 {
+  color: #2563eb;
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.nav-link {
+  background: none;
+  border: none;
+  color: #374151;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  padding: 0.5rem 0;
+  font-family: inherit;
+}
+
+.nav-link:hover {
+  color: #2563eb;
+}
+
+/* Остальные стили остаются без изменений */
+.nav {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.btn-login {
+  padding: 0.5rem 1.5rem;
+  border: 2px solid #666;
+  background: transparent;
+  color: #cccccc;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-login:hover {
+  background: #333;
+  color: white;
+  border-color: #888;
+}
+
+.btn-register {
+  padding: 0.5rem 1.5rem;
+  background: #ffffff;
+  color: #000000;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.btn-register:hover {
+  background: #e0e0e0;
+}
+
+.menu-toggle {
+  display: none;
+  flex-direction: column;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.menu-toggle span {
+  width: 25px;
+  height: 3px;
+  background: #ffffff;
+  margin: 3px 0;
+  transition: 0.3s;
+}
+
+/* Стили для профиля */
+.profile-menu {
+  position: relative;
+}
+
+.profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: #333;
+  border: 1px solid #555;
+  border-radius: 6px;
+  padding: 0.2rem 0.6rem;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.75rem;
+  height: 32px;
+}
+
+.profile-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.profile-name {
+  font-weight: 500;
+  font-size: 0.7rem !important;
+  white-space: nowrap;
+  transform: scale(1.2);
+  transform-origin: left center;
+}
+.profile-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background: #000;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 0.5rem;
+  min-width: 160px;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.3s ease;
+  text-align: left;
+}
+
+.dropdown-item:hover {
+  background: #333;
+  color: #fff;
+}
+
+.logout-btn {
+  color: #ff6b6b;
+}
+
+.logout-btn:hover {
+  background: #442222;
+  color: #ff4444;
+}
+
+.user-menu-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.add-car-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.add-car-btn:hover {
+  background: #059669;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+  .user-menu-wrapper {
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .add-car-btn {
+    width: 100%;
+    justify-content: center;
+    order: -1; /* Перемещаем кнопку вверх */
+    margin-bottom: 10px;
+  }
+
+  .nav-open .nav-link:nth-child(3) {
+    display: block !important; /* Показываем "Сдать авто" в мобильном меню */
+  }
+}
+
+/* Скрываем кнопку "Сдать авто" в десктопном навбаре когда пользователь авторизован */
+@media (min-width: 769px) {
+  .nav .nav-link:nth-child(3) {
+    display: none;
+  }
+}
+

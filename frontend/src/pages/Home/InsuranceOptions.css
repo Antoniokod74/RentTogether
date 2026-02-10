@@ -1,0 +1,319 @@
+.insurance-options {
+  background: #000000;
+  padding: 80px 0;
+  color: #ffffff;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.section-header h2 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #ffffff;
+}
+
+.section-subtitle {
+  font-size: 1.2rem;
+  color: #cccccc;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.divider {
+  width: 100px;
+  height: 2px;
+  background: #333;
+  margin: 0 auto;
+}
+
+.insurance-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-bottom: 60px;
+}
+
+.insurance-card {
+  background: #0a0a0a;
+  border: 2px solid #222;
+  border-radius: 16px;
+  padding: 2rem;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.insurance-card:hover {
+  border-color: #444;
+  transform: translateY(-5px);
+}
+
+.insurance-card.included {
+  border-color: #00ff88;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+  position: relative;
+}
+
+.insurance-card.included::before {
+  content: 'Включена';
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #00ff88;
+  color: #000;
+  padding: 6px 20px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.insurance-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.insurance-icon-wrapper {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #222;
+  border-radius: 12px;
+  border: 1px solid #333;
+}
+
+.insurance-card.included .insurance-icon-wrapper {
+  background: #00ff88;
+}
+
+.insurance-icon {
+  width: 30px;
+  height: 30px;
+  color: #ffffff;
+}
+
+.insurance-card.included .insurance-icon {
+  color: #000000;
+}
+
+.insurance-title-price {
+  flex: 1;
+}
+
+.insurance-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.insurance-price {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #ffffff;
+  display: block;
+}
+
+.insurance-card.included .insurance-price {
+  color: #00ff88;
+}
+
+.insurance-description {
+  color: #999;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #222;
+}
+
+.insurance-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem 0;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center; /* Изменено: выравнивание по центру по вертикали */
+  gap: 0.8rem;
+  color: #ccc;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  margin-bottom: 0.8rem;
+  min-height: 24px; /* Добавлено для одинаковой высоты строк */
+}
+
+.check-icon {
+  color: #00ff88;
+  font-weight: bold;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  background: #1a1a1a;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  border: 1px solid #00ff88;
+  /* Убрано margin-top так как теперь выравнивание по центру */
+}
+
+.insurance-card.included .check-icon {
+  background: #00ff88;
+  color: #000;
+  border: none;
+}
+
+.select-insurance-btn {
+  width: 100%;
+  padding: 1rem;
+  background: #333;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.select-insurance-btn:hover {
+  background: #444;
+}
+
+.select-insurance-btn.included {
+  background: #00ff88;
+  color: #000;
+  font-weight: 700;
+}
+
+.select-insurance-btn.included:hover {
+  background: #00cc66;
+}
+
+.consultation-section {
+  background: #111;
+  border-radius: 16px;
+  padding: 2rem;
+  border: 1px solid #333;
+}
+
+.consultation-content {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.consultation-icon {
+  width: 40px;
+  height: 40px;
+  color: #00ff88;
+  flex-shrink: 0;
+}
+
+.consultation-text {
+  flex: 1;
+}
+
+.consultation-text h4 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #ffffff;
+}
+
+.consultation-text p {
+  color: #ccc;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.consultation-btn {
+  padding: 1rem 2rem;
+  background: transparent;
+  color: #00ff88;
+  border: 2px solid #00ff88;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.consultation-btn:hover {
+  background: #00ff88;
+  color: #000;
+}
+
+/* Адаптивность */
+@media (max-width: 968px) {
+  .insurance-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .consultation-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .insurance-options {
+    padding: 60px 0;
+  }
+  
+  .section-header h2 {
+    font-size: 2rem;
+  }
+  
+  .insurance-grid {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+    margin: 0 auto 40px;
+  }
+  
+  .insurance-card {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 1rem;
+  }
+  
+  .insurance-card {
+    padding: 1.2rem;
+  }
+  
+  .consultation-section {
+    padding: 1.5rem;
+  }
+  
+  .consultation-btn {
+    width: 100%;
+    padding: 0.8rem;
+  }
+}
