@@ -21,7 +21,7 @@ const Catalog = () => {
     const fetchCars = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:5000/api/cars');
+        const response = await fetch('/api/cars');
         
         if (!response.ok) {
           throw new Error('Ошибка загрузки автомобилей');
@@ -58,7 +58,7 @@ const Catalog = () => {
       if (filters.fuel_type) queryParams.append('fuel_type', filters.fuel_type);
       if (filters.car_class) queryParams.append('car_class', filters.car_class); // ДОБАВИЛ
 
-      const response = await fetch(`http://localhost:5000/api/cars?${queryParams}`);
+      const response = await fetch(`/api/cars?${queryParams}`);
       
       if (!response.ok) {
         throw new Error('Ошибка поиска');
@@ -76,7 +76,7 @@ const Catalog = () => {
 
   const getMainPhoto = (car) => {
     if (car.main_photo_url) {
-      return `http://localhost:5000${car.main_photo_url}`;
+      return `${car.main_photo_url}`;
     }
     return null;
   };
@@ -130,7 +130,7 @@ const Catalog = () => {
     
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/cars');
+      const response = await fetch('/api/cars');
       
       if (!response.ok) {
         throw new Error('Ошибка загрузки автомобилей');
