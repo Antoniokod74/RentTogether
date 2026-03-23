@@ -201,7 +201,7 @@ const CarDetails = () => {
 
   const getMainPhoto = () => {
     const mainPhoto = photos.find(photo => photo.is_main) || photos[0];
-    return mainPhoto ? `http://localhost:5000${mainPhoto.photo_url}` : null;
+    return mainPhoto ? mainPhoto.photo_url : null;
   };
 
   const openPhotoViewer = (index) => {
@@ -529,7 +529,7 @@ const CarDetails = () => {
                       onClick={() => openPhotoViewer(index)}
                     >
                       <img 
-                        src={`http://localhost:5000${photo.photo_url}`} 
+                        src={photo.photo_url}
                         alt={`${car.brand} ${car.model} ${index + 1}`}
                       />
                       {photo.is_main && <div className="main-indicator">Главная</div>}
@@ -787,7 +787,7 @@ const CarDetails = () => {
             
             <div className="photo-container">
               <img 
-                src={`http://localhost:5000${photos[selectedPhotoIndex].photo_url}`} 
+                src={photos[selectedPhotoIndex].photo_url}
                 alt={`${car.brand} ${car.model} ${selectedPhotoIndex + 1}`}
               />
             </div>
