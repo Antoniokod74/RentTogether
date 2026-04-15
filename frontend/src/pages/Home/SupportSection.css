@@ -307,4 +307,38 @@
   font-size: 0.9rem;
 }
 
-/* Убрана мобильная адаптивность */
+/* Добавлена мобильная адаптивность */
+
+@media (max-width: 768px) {
+  .support-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .support-header h2 {
+    font-size: 2rem;
+  }
+
+  .contacts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .emergency-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .rating-value {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .contact-icon-wrapper {
+    width: 40px;
+    height: 40px;
+  }
+
+  .contact-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
