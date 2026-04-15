@@ -17,10 +17,7 @@ const PORT = process.env.PORT || 5000;
 // Получаем __dirname для ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const routerDiagram = require('express-router-diagram');
-app.use(routerDiagram({
-  webRoute: 'express-routes'  
-}));
+
 
 const fontPath = path.join(__dirname, 'fonts', 'DejaVuSans.ttf');
 console.log('🖋️ Путь к шрифту:', fontPath);
