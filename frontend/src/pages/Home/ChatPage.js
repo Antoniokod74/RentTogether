@@ -33,37 +33,6 @@ const ChatPage = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Динамическая высота на мобильных
-  useEffect(() => {
-    if (isMobileView) {
-      const setVH = () => {
-        document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
-      };
-      setVH();
-      window.addEventListener('resize', setVH);
-      return () => window.removeEventListener('resize', setVH);
-    }
-  }, [isMobileView]);
-
-  // Блокировка скролла body на мобильных при открытом чате
-  useEffect(() => {
-    if (isMobileView && selectedChat) {
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-    } else {
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-    }
-    
-    return () => {
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-    };
-  }, [isMobileView, selectedChat]);
-
   // Подключение к WebSocket
   useEffect(() => {
     const authToken = localStorage.getItem('token');

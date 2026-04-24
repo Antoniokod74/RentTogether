@@ -415,32 +415,25 @@
 /* ========== МОБИЛЬНЫЕ СТИЛИ ========== */
 @media (max-width: 768px) {
   .chat-page {
-    padding-top: 0;
-    height: 100vh;
-    height: -webkit-fill-available;
-    overflow: hidden;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    padding-top: 70px;
+    min-height: 100vh;
+    height: auto;
+    position: relative;
+    overflow: visible;
   }
 
   .chat-container.mobile {
-    height: 100%;
-    height: -webkit-fill-available;
+    height: auto;
+    min-height: calc(100vh - 70px);
     border-radius: 0;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
   }
 
   /* Стили для списка чатов на мобильных */
   .chat-container.mobile .chat-list {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    height: auto;
+    min-height: calc(100vh - 70px);
   }
 
   .chat-container.mobile .chat-list-items {
@@ -455,12 +448,10 @@
 
   /* Область переписки - занимает всю высоту */
   .chat-container.mobile .chat-area {
-    height: 100%;
+    height: auto;
+    min-height: calc(100vh - 70px);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    flex: 1;
-    min-height: 0;
   }
 
   /* Сообщения - скроллится */
@@ -469,16 +460,16 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding: 16px;
-    min-height: 0;
+    max-height: 55vh;
   }
 
-  /* Поле ввода - с учётом безопасной зоны */
+  /* Поле ввода - всегда видно */
   .chat-container.mobile .chat-input-area {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 12px;
-    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    padding: 12px 16px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     background: #0f172a;
     border-top: 1px solid #334155;
     flex-shrink: 0;
@@ -553,22 +544,21 @@
   }
 }
 
-/* Вертикальная ориентация на мобильных - компактный режим */
+/* Вертикальная ориентация на мобильных */
 @media (max-width: 768px) and (orientation: portrait) {
-  .chat-container.mobile .chat-header {
-    padding: 6px 12px;
+  .chat-container.mobile .chat-messages {
+    max-height: 55vh;
   }
+}
 
-  .chat-container.mobile .chat-header-details h3 {
-    font-size: 0.9rem;
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+  .chat-container.mobile .chat-messages {
+    max-height: 50vh;
   }
 
   .chat-container.mobile .chat-messages {
-    padding: 10px;
-  }
-
-  .message {
-    max-width: 90%;
+    padding: 12px;
   }
 
   .message-bubble {
@@ -579,82 +569,13 @@
     font-size: 0.85rem;
   }
 
-  .chat-container.mobile .chat-input-area {
-    padding: 6px 12px;
-    padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
-  }
-
   .chat-container.mobile .chat-input {
-    padding: 6px 12px;
     font-size: 0.85rem;
+    padding: 6px 12px;
   }
 
   .chat-container.mobile .send-btn {
     padding: 6px 12px;
-  }
-
-  .attach-btn, .emoji-btn {
-    padding: 6px;
-  }
-
-  .attach-btn svg, .emoji-btn svg, .send-btn svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  .back-btn-chat svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  .avatar-placeholder {
-    width: 36px;
-    height: 36px;
-    font-size: 0.9rem;
-  }
-}
-
-/* Для очень маленьких экранов (iPhone SE, 5, 5S) */
-@media (max-width: 380px) and (orientation: portrait) {
-  .chat-container.mobile .chat-header {
-    padding: 4px 10px;
-  }
-
-  .chat-container.mobile .chat-messages {
-    padding: 8px;
-    gap: 8px;
-  }
-
-  .chat-container.mobile .chat-input-area {
-    padding: 4px 10px;
-    padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
-  }
-
-  .message-bubble {
-    padding: 4px 8px;
-  }
-
-  .message-text {
-    font-size: 0.8rem;
-  }
-
-  .chat-container.mobile .chat-input {
-    padding: 5px 10px;
-    font-size: 0.8rem;
-  }
-
-  .avatar-placeholder {
-    width: 32px;
-    height: 32px;
-    font-size: 0.8rem;
-  }
-
-  .chat-name {
-    font-size: 0.85rem;
-  }
-
-  .chat-last-message {
-    font-size: 0.7rem;
   }
 }
 
