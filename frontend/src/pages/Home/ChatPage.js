@@ -19,12 +19,10 @@ const ChatPage = () => {
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
   
-  // WebSocket
   const socketRef = useRef(null);
   const socketInitialized = useRef(false);
   const [socketConnected, setSocketConnected] = useState(false);
 
-  // Определяем мобильное разрешение
   useEffect(() => {
     const handleResize = () => {
       setIsMobileView(window.innerWidth <= 768);
@@ -33,7 +31,6 @@ const ChatPage = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Подключение к WebSocket
   useEffect(() => {
     const authToken = localStorage.getItem('token');
     if (!authToken || socketInitialized.current) return;
@@ -59,8 +56,6 @@ const ChatPage = () => {
     });
     
     socketRef.current.on('new_message', (data) => {
-      console.log('📩 Новое сообщение:', data);
-      
       if (selectedChat && selectedChat.id === data.chatId) {
         setMessages(prev => [...prev, data.message]);
       }
@@ -77,14 +72,13 @@ const ChatPage = () => {
     });
     
     socketRef.current.on('message_sent', (message) => {
-      console.log('✅ Сообщение отправлено:', message);
       setMessages(prev => prev.map(msg => 
         msg.id === message.tempId ? { ...message, tempId: undefined } : msg
       ));
     });
     
     socketRef.current.on('message_error', (data) => {
-      console.error('❌ Ошибка отправки:', data.error);
+      console.error('❌ Ошибка:', data.error);
     });
     
     return () => {
@@ -95,7 +89,6 @@ const ChatPage = () => {
     };
   }, [selectedChat]);
 
-  // Загрузка списка чатов
   useEffect(() => {
     if (!token) {
       navigate('/login');
@@ -104,12 +97,10 @@ const ChatPage = () => {
     fetchChats();
   }, [token, navigate]);
 
-  // Автоскролл к последнему сообщению
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Загрузка сообщений при выборе чата
   useEffect(() => {
     if (selectedChat) {
       fetchMessages(selectedChat.id);
@@ -120,9 +111,7 @@ const ChatPage = () => {
     try {
       setLoading(true);
       const response = await fetch('/api/chats', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
         const data = await response.json();
@@ -140,9 +129,7 @@ const ChatPage = () => {
   const fetchMessages = async (chatId) => {
     try {
       const response = await fetch(`/api/chats/${chatId}/messages`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
         const data = await response.json();
@@ -228,12 +215,6 @@ const ChatPage = () => {
     setSelectedChat(null);
   };
 
-  const handleInputFocus = (e) => {
-    setTimeout(() => {
-      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 300);
-  };
-
   const formatMessageTime = (timestamp) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
@@ -266,27 +247,19 @@ const ChatPage = () => {
     return (
       <div className="chat-page">
         <div className="chat-container desktop">
-          {/* Список чатов */}
           <div className="chat-list">
             <div className="chat-list-header">
-              <h2>Сообщения</h2>
-              <button className="new-chat-btn" onClick={() => navigate('/users')}>
-                + Новый чат
-              </button>
+              <h2>Чаты</h2>
+              <button className="new-chat-btn" onClick={() => navigate('/users')}>Новый чат</button>
             </div>
             <div className="chat-list-items">
               {loading ? (
-                <div className="chat-loading">
-                  <div className="chat-loading-spinner"></div>
-                  <p>Загрузка чатов...</p>
-                </div>
+                <div className="chat-loading">Загрузка...</div>
               ) : chats.length === 0 ? (
                 <div className="chat-empty-list">
                   <div className="chat-empty-icon">💬</div>
-                  <p>У вас пока нет диалогов</p>
-                  <button className="start-chat-btn" onClick={() => navigate('/users')}>
-                    Начать диалог
-                  </button>
+                  <p>Нет диалогов</p>
+                  <button className="start-chat-btn" onClick={() => navigate('/users')}>Написать</button>
                 </div>
               ) : (
                 chats.map(chat => (
@@ -301,17 +274,11 @@ const ChatPage = () => {
                       </div>
                     </div>
                     <div className="chat-info">
-                      <div className="chat-name">
-                        {chat.first_name} {chat.last_name}
-                      </div>
-                      <div className="chat-last-message">
-                        {chat.last_message || 'Новое сообщение'}
-                      </div>
+                      <div className="chat-name">{chat.first_name} {chat.last_name}</div>
+                      <div className="chat-last-message">{chat.last_message || 'Новое сообщение'}</div>
                     </div>
                     <div className="chat-meta">
-                      <div className="chat-time">
-                        {formatChatTime(chat.last_message_time)}
-                      </div>
+                      <div className="chat-time">{formatChatTime(chat.last_message_time)}</div>
                     </div>
                   </div>
                 ))
@@ -319,7 +286,6 @@ const ChatPage = () => {
             </div>
           </div>
 
-          {/* Область переписки */}
           <div className="chat-area">
             {selectedChat ? (
               <>
@@ -332,27 +298,21 @@ const ChatPage = () => {
                     </div>
                     <div className="chat-header-details">
                       <h3>{selectedChat.first_name} {selectedChat.last_name}</h3>
-                      <span className="chat-status">в сети</span>
+                      <span className="chat-status">онлайн</span>
                     </div>
                   </div>
                   <div className="chat-header-actions">
-                    <button className="chat-action-btn" title="Позвонить">
-                      <Phone size={18} />
-                    </button>
-                    <button className="chat-action-btn" title="Видеозвонок">
-                      <Video size={18} />
-                    </button>
-                    <button className="chat-action-btn" title="Ещё">
-                      <MoreVertical size={18} />
-                    </button>
+                    <button><Phone size={16} /></button>
+                    <button><Video size={16} /></button>
+                    <button><MoreVertical size={16} /></button>
                   </div>
                 </div>
 
                 <div className="chat-messages" ref={chatContainerRef}>
                   {messages.length === 0 ? (
-                    <div className="chat-empty-messages">
-                      <div className="empty-messages-icon">💬</div>
-                      <p>Напишите первое сообщение</p>
+                    <div className="chat-empty">
+                      <div className="chat-empty-icon">💬</div>
+                      <p>Напишите сообщение</p>
                     </div>
                   ) : (
                     messages.map((msg, index) => (
@@ -362,9 +322,7 @@ const ChatPage = () => {
                       >
                         <div className="message-bubble">
                           <div className="message-text">{msg.message}</div>
-                          <div className="message-time">
-                            {formatMessageTime(msg.created_at)}
-                          </div>
+                          <div className="message-time">{formatMessageTime(msg.created_at)}</div>
                         </div>
                       </div>
                     ))
@@ -373,29 +331,19 @@ const ChatPage = () => {
                 </div>
 
                 <div className="chat-input-area">
-                  <button className="attach-btn" title="Прикрепить файл">
-                    <Paperclip size={20} />
-                  </button>
-                  <button className="emoji-btn" title="Смайлы">
-                    <Smile size={20} />
-                  </button>
+                  <button className="attach-btn"><Paperclip size={18} /></button>
+                  <button className="emoji-btn"><Smile size={18} /></button>
                   <textarea
                     className="chat-input"
-                    placeholder="Введите сообщение..."
+                    placeholder="Сообщение..."
                     value={messageInput}
                     onChange={(e) => setMessageInput(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    onFocus={handleInputFocus}
                     rows={1}
                     disabled={sending}
                   />
-                  <button 
-                    className="send-btn" 
-                    onClick={handleSendMessage} 
-                    disabled={sending || !messageInput.trim()}
-                    title="Отправить"
-                  >
-                    <Send size={18} />
+                  <button className="send-btn" onClick={handleSendMessage} disabled={sending || !messageInput.trim()}>
+                    <Send size={16} />
                   </button>
                 </div>
               </>
@@ -403,7 +351,7 @@ const ChatPage = () => {
               <div className="chat-empty">
                 <div className="chat-empty-icon">💬</div>
                 <h3>Выберите чат</h3>
-                <p>Нажмите на диалог, чтобы начать общение</p>
+                <p>Начните общение</p>
               </div>
             )}
           </div>
@@ -419,21 +367,16 @@ const ChatPage = () => {
         {!selectedChat ? (
           <div className="chat-list">
             <div className="chat-list-header">
-              <h2>Сообщения</h2>
-              <button className="new-chat-btn" onClick={() => navigate('/users')}>
-                +
-              </button>
+              <h2>Чаты</h2>
+              <button className="new-chat-btn" onClick={() => navigate('/users')}>+</button>
             </div>
             <div className="chat-list-items">
               {loading ? (
-                <div className="chat-loading">
-                  <div className="chat-loading-spinner"></div>
-                  <p>Загрузка...</p>
-                </div>
+                <div className="chat-loading">Загрузка...</div>
               ) : chats.length === 0 ? (
                 <div className="chat-empty-list">
                   <div className="chat-empty-icon">💬</div>
-                  <p>У вас пока нет диалогов</p>
+                  <p>Нет диалогов</p>
                 </div>
               ) : (
                 chats.map(chat => (
@@ -448,17 +391,11 @@ const ChatPage = () => {
                       </div>
                     </div>
                     <div className="chat-info">
-                      <div className="chat-name">
-                        {chat.first_name} {chat.last_name}
-                      </div>
-                      <div className="chat-last-message">
-                        {chat.last_message || 'Новое сообщение'}
-                      </div>
+                      <div className="chat-name">{chat.first_name} {chat.last_name}</div>
+                      <div className="chat-last-message">{chat.last_message || 'Новое сообщение'}</div>
                     </div>
                     <div className="chat-meta">
-                      <div className="chat-time">
-                        {formatChatTime(chat.last_message_time)}
-                      </div>
+                      <div className="chat-time">{formatChatTime(chat.last_message_time)}</div>
                     </div>
                   </div>
                 ))
@@ -469,7 +406,7 @@ const ChatPage = () => {
           <>
             <div className="chat-header">
               <button className="back-btn-chat" onClick={handleBackToList}>
-                <ArrowLeft size={24} />
+                <ArrowLeft size={22} />
               </button>
               <div className="chat-header-info">
                 <div className="chat-avatar">
@@ -479,19 +416,17 @@ const ChatPage = () => {
                 </div>
                 <div className="chat-header-details">
                   <h3>{selectedChat.first_name} {selectedChat.last_name}</h3>
-                  <span className="chat-status">в сети</span>
+                  <span className="chat-status">онлайн</span>
                 </div>
               </div>
-              <button className="menu-btn-chat">
-                <MoreVertical size={20} />
-              </button>
+              <button className="menu-btn-chat"><MoreVertical size={18} /></button>
             </div>
 
             <div className="chat-messages" ref={chatContainerRef}>
               {messages.length === 0 ? (
-                <div className="chat-empty-messages">
-                  <div className="empty-messages-icon">💬</div>
-                  <p>Напишите первое сообщение</p>
+                <div className="chat-empty">
+                  <div className="chat-empty-icon">💬</div>
+                  <p>Напишите сообщение</p>
                 </div>
               ) : (
                 messages.map((msg, index) => (
@@ -501,9 +436,7 @@ const ChatPage = () => {
                   >
                     <div className="message-bubble">
                       <div className="message-text">{msg.message}</div>
-                      <div className="message-time">
-                        {formatMessageTime(msg.created_at)}
-                      </div>
+                      <div className="message-time">{formatMessageTime(msg.created_at)}</div>
                     </div>
                   </div>
                 ))
@@ -512,25 +445,18 @@ const ChatPage = () => {
             </div>
 
             <div className="chat-input-area">
-              <button className="attach-btn" onClick={() => console.log('Attach')}>
-                <Paperclip size={20} />
-              </button>
+              <button className="attach-btn"><Paperclip size={18} /></button>
               <textarea
                 className="chat-input"
                 placeholder="Сообщение..."
                 value={messageInput}
                 onChange={(e) => setMessageInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                onFocus={handleInputFocus}
                 rows={1}
                 disabled={sending}
               />
-              <button 
-                className="send-btn" 
-                onClick={handleSendMessage} 
-                disabled={sending || !messageInput.trim()}
-              >
-                <Send size={18} />
+              <button className="send-btn" onClick={handleSendMessage} disabled={sending || !messageInput.trim()}>
+                <Send size={16} />
               </button>
             </div>
           </>
