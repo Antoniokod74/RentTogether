@@ -165,6 +165,9 @@ const Header = () => {
 
           {/* Десктопные кнопки авторизации (скрываются на мобильных) */}
           <div className="auth-buttons desktop-only">
+            <button className="btn-chat" onClick={handleChatClick}>
+              <MessageCircle size={18} /> Чат
+              </button>
             {user ? (
               <div className="user-menu-wrapper">
                 <button className="add-car-btn" onClick={handleAddCarClick}>
