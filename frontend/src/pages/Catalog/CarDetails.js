@@ -5,13 +5,15 @@ import Footer from '../Home/Footer';
 import { 
   Car, Users, Fuel, Cog, Gauge, Palette, MapPin, Calendar, 
   FileText, ArrowLeft, X, ChevronLeft, ChevronRight, CreditCard,
-  Phone, Calendar as CalendarIcon
+  Phone, Calendar as CalendarIcon, MessageCircle
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import './CarDetails.css';
 
 const CarDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user, token } = useAuth();
   const [car, setCar] = useState(null);
   const [photos, setPhotos] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -21,6 +23,7 @@ const CarDetails = () => {
   const [isPhotoViewerOpen, setIsPhotoViewerOpen] = useState(false);
   const [selectedStartDate, setSelectedStartDate] = useState(null);
   const [selectedEndDate, setSelectedEndDate] = useState(null);
+  const [owner, setOwner] = useState(null);
 
   // Состояния для модального окна бронирования
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -36,7 +39,6 @@ const CarDetails = () => {
   const normalizeDate = (dateString) => {
     if (!dateString) return null;
     
-    // Если дата в формате 'YYYY-MM-DD'
     if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
       const [year, month, day] = dateString.split('-');
       const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
@@ -44,7 +46,6 @@ const CarDetails = () => {
       return date;
     }
     
-    // Если это ISO строка или другой формат
     const date = new Date(dateString);
     if (isNaN(date.getTime())) {
       console.error('Invalid date:', dateString);
@@ -54,7 +55,61 @@ const CarDetails = () => {
     return date;
   };
 
-  // Улучшенная функция проверки забронированных дат для отображения в календаре
+  // Получение данных владельца автомобиля
+  useEffect(() => {
+    const fetchOwner = async () => {
+      if (car && car.owner_id) {
+        try {
+          const response = await fetch(`/api/users/${car.owner_id}`);
+          if (response.ok) {
+            const data = await response.json();
+            setOwner(data.user);
+          }
+        } catch (error) {
+          console.error('Ошибка загрузки владельца:', error);
+        }
+      }
+    };
+    fetchOwner();
+  }, [car]);
+
+  // Функция для начала чата с владельцем
+  const handleContactOwner = async () => {
+    if (!user) {
+      navigate('/login', { state: { from: `/car/${id}` } });
+      return;
+    }
+
+    // Проверяем, не является ли текущий пользователь владельцем
+    if (user.id === car.owner_id) {
+      alert('Это ваш автомобиль. Вы не можете начать чат с самим собой.');
+      return;
+    }
+
+    try {
+      // Создаём или получаем существующий чат
+      const response = await fetch('/api/chats', {
+        method: 'POST',
+        headers: {
+          'Content-Type':'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ otherUserId: car.owner_id })
+      });
+
+      if (response.ok) {
+        const { chatId } = await response.json();
+        navigate(`/chat?chatId=${chatId}&with=${car.owner_id}`);
+      } else {
+        console.error('Ошибка создания чата');
+        alert('Не удалось создать чат. Попробуйте позже.');
+      }
+    } catch (error) {
+      console.error('Ошибка:', error);
+      alert('Ошибка при открытии чата');
+    }
+  };
+
   const isDateBooked = (date) => {
     if (!bookings || bookings.length === 0) return false;
     
@@ -64,11 +119,9 @@ const CarDetails = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    // Не показываем прошедшие даты как занятые (для визуала)
     if (checkDate < today) return false;
     
     const isBooked = bookings.some(booking => {
-      // В КАЛЕНДАРЕ показываем как занятые ВСЕ активные бронирования включая pending
       const activeStatuses = ['confirmed', 'active', 'paid', 'pending'];
       if (!activeStatuses.includes(booking.status)) return false;
       
@@ -83,7 +136,6 @@ const CarDetails = () => {
     return isBooked;
   };
 
-  // Функция проверки доступности диапазона дат для бронирования
   const isDateRangeAvailable = (startDate, endDate) => {
     if (!bookings || bookings.length === 0) return true;
     
@@ -92,7 +144,6 @@ const CarDetails = () => {
     
     if (!start || !end) return false;
     
-    // Проверяем каждую дату в диапазоне
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
       const currentDate = new Date(d);
       if (isDateBookedForBooking(currentDate)) {
@@ -103,7 +154,6 @@ const CarDetails = () => {
     return true;
   };
 
-  // Отдельная функция для проверки при бронировании (более строгая)
   const isDateBookedForBooking = (date) => {
     if (!bookings || bookings.length === 0) return false;
     
@@ -111,7 +161,6 @@ const CarDetails = () => {
     if (!checkDate) return false;
     
     return bookings.some(booking => {
-      // При бронировании учитываем только подтвержденные/активные брони
       const validStatuses = ['confirmed', 'active', 'paid'];
       if (!validStatuses.includes(booking.status)) return false;
       
@@ -129,7 +178,6 @@ const CarDetails = () => {
       try {
         setLoading(true);
         
-        // Загружаем данные автомобиля
         const response = await fetch(`/api/cars/${id}`);
         if (!response.ok) {
           throw new Error('Ошибка загрузки данных автомобиля');
@@ -137,14 +185,12 @@ const CarDetails = () => {
         const data = await response.json();
         setCar(data.car);
         
-        // Загружаем фотографии автомобиля
         const photosResponse = await fetch(`/api/cars/${id}/photos`);
         if (photosResponse.ok) {
           const photosData = await photosResponse.json();
           setPhotos(photosData.photos || []);
         }
 
-        // Загружаем бронирования автомобиля
         const bookingsResponse = await fetch(`/api/cars/${id}/bookings`);
         if (bookingsResponse.ok) {
           const bookingsData = await bookingsResponse.json();
@@ -166,7 +212,6 @@ const CarDetails = () => {
     fetchCarDetails();
   }, [id]);
 
-  // Отладочный эффект для проверки работы функций
   useEffect(() => {
     if (bookings.length > 0) {
       console.log('🔍 Проверка работы isDateBooked:');
@@ -179,11 +224,10 @@ const CarDetails = () => {
         });
       });
       
-      // Проверим несколько дат
       const testDates = [
         new Date(),
-        new Date(Date.now() + 86400000), // Завтра
-        new Date(Date.now() + 172800000) // Послезавтра
+        new Date(Date.now() + 86400000),
+        new Date(Date.now() + 172800000)
       ];
       
       testDates.forEach(date => {
@@ -228,7 +272,6 @@ const CarDetails = () => {
     );
   };
 
-  // Функции для работы с календарем
   const isDateSelected = (date) => {
     if (!selectedStartDate || !selectedEndDate) return false;
     const checkDate = normalizeDate(date);
@@ -241,20 +284,16 @@ const CarDetails = () => {
     const clickedDate = normalizeDate(date);
     if (!clickedDate) return;
     
-    // Проверяем, не занята ли дата (для отображения в календаре)
     if (isDateBooked(clickedDate)) {
       return;
     }
     
     if (!selectedStartDate || (selectedStartDate && selectedEndDate)) {
-      // Начало нового выбора
       setSelectedStartDate(clickedDate);
       setSelectedEndDate(null);
     } else if (clickedDate > selectedStartDate) {
-      // Завершение выбора диапазона
       setSelectedEndDate(clickedDate);
     } else if (clickedDate < selectedStartDate) {
-      // Если кликнули дату раньше начальной, меняем начальную
       setSelectedStartDate(clickedDate);
       setSelectedEndDate(null);
     }
@@ -269,12 +308,10 @@ const CarDetails = () => {
     const firstDay = new Date(year, month, 1).getDay();
     const days = [];
 
-    // Пустые ячейки для дней предыдущего месяца
     for (let i = 0; i < firstDay; i++) {
       days.push(null);
     }
 
-    // Дни текущего месяца
     for (let i = 1; i <= daysInMonth; i++) {
       days.push(new Date(year, month, i));
     }
@@ -310,7 +347,6 @@ const CarDetails = () => {
 
   const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
-  // Расчет общей стоимости
   const calculateTotalPrice = () => {
     if (!selectedStartDate || !selectedEndDate) return 0;
     const start = normalizeDate(selectedStartDate);
@@ -319,14 +355,12 @@ const CarDetails = () => {
     return days * car.daily_price;
   };
 
-  // Функция открытия модального окна бронирования
   const openBookingModal = () => {
     if (!selectedStartDate || !selectedEndDate) {
       alert('Пожалуйста, выберите даты аренды');
       return;
     }
     
-    // Проверяем доступность дат ДЛЯ БРОНИРОВАНИЯ (строгая проверка)
     if (!isDateRangeAvailable(selectedStartDate, selectedEndDate)) {
       alert('В выбранном диапазоне есть занятые даты. Пожалуйста, выберите другие даты.');
       return;
@@ -335,7 +369,6 @@ const CarDetails = () => {
     setIsBookingModalOpen(true);
   };
 
-  // Функция закрытия модального окна
   const closeBookingModal = () => {
     setIsBookingModalOpen(false);
     setPaymentMethod('card');
@@ -347,7 +380,6 @@ const CarDetails = () => {
     setBookingSuccess(false);
   };
 
-  // Функция отправки бронирования
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
     
@@ -356,7 +388,6 @@ const CarDetails = () => {
       return;
     }
 
-    // Финальная проверка перед отправкой
     if (!isDateRangeAvailable(selectedStartDate, selectedEndDate)) {
       alert('К сожалению, выбранные даты стали недоступны. Пожалуйста, выберите другие даты.');
       return;
@@ -400,17 +431,14 @@ const CarDetails = () => {
       
       setBookingSuccess(true);
       
-      // Обновляем список бронирований
       const bookingsResponse = await fetch(`/api/cars/${id}/bookings`);
       if (bookingsResponse.ok) {
         const bookingsData = await bookingsResponse.json();
         setBookings(bookingsData.bookings || []);
       }
       
-      // Увеличил время показа уведомления до 7 секунд
       setTimeout(() => {
         closeBookingModal();
-        // Редирект на страницу профиля с активной вкладкой "Мои поездки"
         navigate('/profile?tab=bookings');
       }, 7000);
 
@@ -422,7 +450,6 @@ const CarDetails = () => {
     }
   };
 
-  // Функция форматирования карты
   const formatCardNumber = (value) => {
     const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
     const matches = v.match(/\d{4,16}/g);
@@ -436,7 +463,6 @@ const CarDetails = () => {
     return parts.length ? parts.join(' ') : value;
   };
 
-  // Функция форматирования срока действия
   const formatExpiry = (value) => {
     const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
     if (v.length >= 2) {
@@ -445,7 +471,6 @@ const CarDetails = () => {
     return v;
   };
 
-  // Закрытие по ESC
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.keyCode === 27) {
@@ -490,9 +515,11 @@ const CarDetails = () => {
     ? Math.ceil((normalizeDate(selectedEndDate) - normalizeDate(selectedStartDate)) / (1000 * 60 * 60 * 24)) + 1 
     : 0;
 
-  // Получаем сегодняшнюю дату для сравнения
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
+  // Определяем, является ли текущий пользователь владельцем
+  const isOwner = user && car && user.id === car.owner_id;
 
   return (
     <div className="car-details-page">
@@ -539,7 +566,6 @@ const CarDetails = () => {
               </div>
             )}
 
-            {/* Календарь бронирования */}
             <div className="booking-calendar">
               <h3>📅 Выберите даты аренды</h3>
               
@@ -568,7 +594,7 @@ const CarDetails = () => {
                   const normalizedDate = normalizeDate(date);
                   const isToday = normalizedDate && normalizedDate.getTime() === today.getTime();
                   const isPast = normalizedDate && normalizedDate < today;
-                  const isBooked = isDateBooked(date); // Для отображения в календаре
+                  const isBooked = isDateBooked(date);
                   const isSelected = isDateSelected(date);
                   const isStart = selectedStartDate && normalizedDate && normalizedDate.getTime() === normalizeDate(selectedStartDate).getTime();
                   const isEnd = selectedEndDate && normalizedDate && normalizedDate.getTime() === normalizeDate(selectedEndDate).getTime();
@@ -587,7 +613,6 @@ const CarDetails = () => {
                 })}
               </div>
 
-              {/* Легенда календаря */}
               <div className="calendar-legend">
                 <div className="legend-item">
                   <div className="legend-color available"></div>
@@ -630,7 +655,6 @@ const CarDetails = () => {
               )}
             </div>
 
-            {/* Блок с выбранными датами и стоимостью */}
             {(selectedStartDate && selectedEndDate) && (
               <div className="booking-summary">
                 <h4>Ваше бронирование</h4>
@@ -755,25 +779,35 @@ const CarDetails = () => {
             )}
 
             <div className="action-buttons">
+              {isOwner ? (
+                <button className="rent-now-btn owner-btn" disabled>
+                  Это ваш автомобиль
+                </button>
+              ) : (
+                <button 
+                  className="rent-now-btn"
+                  disabled={!car.is_available || !selectedStartDate || !selectedEndDate}
+                  onClick={openBookingModal}
+                >
+                  {car.is_available 
+                    ? (selectedStartDate && selectedEndDate ? 'Перейти к бронированию' : 'Выберите даты аренды')
+                    : 'Не доступен для аренды'
+                  }
+                </button>
+              )}
               <button 
-                className="rent-now-btn"
-                disabled={!car.is_available || !selectedStartDate || !selectedEndDate}
-                onClick={openBookingModal}
+                className="contact-btn"
+                onClick={handleContactOwner}
+                disabled={isOwner}
               >
-                {car.is_available 
-                  ? (selectedStartDate && selectedEndDate ? 'Перейти к бронированию' : 'Выберите даты аренды')
-                  : 'Не доступен для аренды'
-                }
-              </button>
-              <button className="contact-btn">
-                Связаться с владельцем
+                <MessageCircle size={18} />
+                {isOwner ? 'Это ваш автомобиль' : 'Связаться с владельцем'}
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Модальное окно просмотра фотографий */}
       {isPhotoViewerOpen && selectedPhotoIndex !== null && (
         <div className="photo-viewer-overlay" onClick={closePhotoViewer}>
           <div className="photo-viewer-content" onClick={(e) => e.stopPropagation()}>
@@ -803,7 +837,6 @@ const CarDetails = () => {
         </div>
       )}
 
-      {/* Модальное окно бронирования */}
       {isBookingModalOpen && (
         <div className="booking-modal-overlay" onClick={closeBookingModal}>
           <div className="booking-modal-content" onClick={(e) => e.stopPropagation()}>
