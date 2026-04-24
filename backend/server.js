@@ -75,7 +75,6 @@ const authenticateToken = (req, res, next) => {
       return res.status(403).json({ error: 'Недействительный токен' });
     }
     req.userId = user.userId;
-    req.userId = user.id;
     next();
   });
 };
@@ -1608,7 +1607,7 @@ app.get('/api/users/:id', async (req, res) => {
 // ========== НАЧАЛО КОДА ЧАТА ==========
 // Получить список чатов пользователя
 app.get('/api/chats', authenticateToken, async (req, res) => {
-  const userId = req.user.id;
+  const userId = req.userId;  // ← ИСПРАВЛЕНО
   try {
     const result = await pool.query(
       `SELECT c.*, 
@@ -1631,7 +1630,7 @@ app.get('/api/chats', authenticateToken, async (req, res) => {
 // Получить сообщения чата
 app.get('/api/chats/:chatId/messages', authenticateToken, async (req, res) => {
   const { chatId } = req.params;
-  const userId = req.user.id;
+  const userId = req.userId;  // ← ИСПРАВЛЕНО
   try {
     const chatCheck = await pool.query(
       'SELECT id FROM chats WHERE id = $1 AND (user1_id = $2 OR user2_id = $2)',
@@ -1667,7 +1666,7 @@ app.get('/api/chats/:chatId/messages', authenticateToken, async (req, res) => {
 app.post('/api/chats/:chatId/messages', authenticateToken, async (req, res) => {
   const { chatId } = req.params;
   const { message } = req.body;
-  const userId = req.user.id;
+  const userId = req.userId;  // ← ИСПРАВЛЕНО
   
   if (!message || message.trim() === '') {
     return res.status(400).json({ error: 'Сообщение не может быть пустым' });
@@ -1704,7 +1703,7 @@ app.post('/api/chats/:chatId/messages', authenticateToken, async (req, res) => {
 // Создать новый чат
 app.post('/api/chats', authenticateToken, async (req, res) => {
   const { otherUserId } = req.body;
-  const userId = req.user.id;
+  const userId = req.userId;  // ← ИСПРАВЛЕНО
   
   if (userId === otherUserId) {
     return res.status(400).json({ error: 'Нельзя создать чат с самим собой' });
