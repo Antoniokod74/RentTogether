@@ -22,6 +22,62 @@ const io = new Server(server, {
     methods: ['GET', 'POST']
   }
 });
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token;
+  if (!token) {
+    return next(new Error('Authentication error'));
+  }
+  
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return next(new Error('Authentication error'));
+    socket.userId = user.userId;
+    next();
+  });
+});
+
+// Обработка WebSocket соединений
+io.on('connection', (socket) => {
+  console.log('🔌 Пользователь подключился:', socket.userId);
+  
+  socket.join(`user_${socket.userId}`);
+  
+  socket.on('send_message', async (data) => {
+    console.log('📨 Получено сообщение от', socket.userId, 'для', data.receiverId);
+    
+    try {
+      const { chatId, message, receiverId, tempId } = data;
+      
+      const result = await pool.query(
+        `INSERT INTO messages (chat_id, sender_id, message) 
+         VALUES ($1, $2, $3) RETURNING *`,
+        [chatId, socket.userId, message.trim()]
+      );
+      
+      await pool.query(
+        'UPDATE chats SET updated_at = NOW() WHERE id = $1',
+        [chatId]
+      );
+      
+      const newMessage = result.rows[0];
+      
+      io.to(`user_${receiverId}`).emit('new_message', {
+        chatId: chatId,
+        message: newMessage,
+        senderId: socket.userId
+      });
+      
+      socket.emit('message_sent', { ...newMessage, tempId });
+      
+    } catch (error) {
+      console.error('Socket error:', error);
+      socket.emit('message_error', { error: 'Ошибка отправки' });
+    }
+  });
+  
+  socket.on('disconnect', () => {
+    console.log('🔌 Пользователь отключился:', socket.userId);
+  });
+});
 const PORT = process.env.PORT || 5000;
 
 // Получаем __dirname для ES modules
@@ -1748,9 +1804,10 @@ app.use(expressRouterDiagram({
 }));
 
 // Запуск сервера
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📡 Health check: http://localhost:${PORT}/api/health`);
   console.log(`📁 Uploads directory: ${uploadsDir}`);
   console.log(`🗺️  Карта маршрутов доступна по адресу: http://localhost:${PORT}/express-routes`);
+  console.log(`🔌 WebSocket server running on port ${PORT}`);
 });
