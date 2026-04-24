@@ -8,7 +8,7 @@ import Profile from './pages/Auth/Profile';
 import './App.css';
 import CarDetails from './pages/Catalog/CarDetails';
 import AddCar from './pages/Catalog/AddCar';
-import ChatPage from './pages/Chat/ChatPage';
+import ChatPage from './pages/Home/ChatPage';
 
 function App() {
   return (
