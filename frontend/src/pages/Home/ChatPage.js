@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Send, ArrowLeft, User, Phone, Video, MoreVertical, Smile, Paperclip, Trash2, CheckCheck } from 'lucide-react';
+import { Send, ArrowLeft, User, Phone, Video, MoreVertical, Smile, Paperclip } from 'lucide-react';
+import io from 'socket.io-client';
 import './ChatPage.css';
 
 const ChatPage = () => {
@@ -17,6 +18,10 @@ const ChatPage = () => {
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
+  
+  // WebSocket
+  const socketRef = useRef(null);
+  const [socketConnected, setSocketConnected] = useState(false);
 
   // Определяем мобильное разрешение
   useEffect(() => {
@@ -26,6 +31,60 @@ const ChatPage = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Подключение к WebSocket
+  useEffect(() => {
+    const authToken = localStorage.getItem('token');
+    if (!authToken) return;
+    
+    socketRef.current = io('/', {
+      auth: { token: authToken },
+      transports: ['websocket']
+    });
+    
+    socketRef.current.on('connect', () => {
+      console.log('📡 WebSocket connected');
+      setSocketConnected(true);
+    });
+    
+    socketRef.current.on('new_message', (data) => {
+      console.log('📩 Новое сообщение:', data);
+      
+      // Если это сообщение для текущего открытого чата
+      if (selectedChat && selectedChat.id === data.chatId) {
+        setMessages(prev => [...prev, data.message]);
+      }
+      
+      // Обновляем последнее сообщение в списке чатов
+      setChats(prev => prev.map(chat =>
+        chat.id === data.chatId
+          ? { 
+              ...chat, 
+              last_message: data.message.message, 
+              last_message_time: data.message.created_at 
+            }
+          : chat
+      ));
+    });
+    
+    socketRef.current.on('message_sent', (message) => {
+      console.log('✅ Сообщение отправлено:', message);
+      // Обновляем сообщение с реальным ID (если нужно)
+      setMessages(prev => prev.map(msg => 
+        msg.id === message.tempId ? { ...message, tempId: undefined } : msg
+      ));
+    });
+    
+    socketRef.current.on('message_error', (data) => {
+      console.error('❌ Ошибка отправки:', data.error);
+    });
+    
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
+  }, [selectedChat]);
 
   // Загрузка списка чатов
   useEffect(() => {
@@ -88,39 +147,71 @@ const ChatPage = () => {
   const handleSendMessage = async () => {
     if (!messageInput.trim() || !selectedChat || sending) return;
 
-    setSending(true);
     const text = messageInput.trim();
     setMessageInput('');
+    setSending(true);
 
-    try {
-      const response = await fetch(`/api/chats/${selectedChat.id}/messages`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ message: text })
+    // Отправляем через WebSocket
+    if (socketConnected && socketRef.current) {
+      const tempId = Date.now();
+      
+      // Оптимистичное обновление UI
+      const tempMessage = {
+        id: tempId,
+        sender_id: user?.id,
+        message: text,
+        created_at: new Date().toISOString(),
+        is_read: false
+      };
+      setMessages(prev => [...prev, tempMessage]);
+      
+      // Обновляем последнее сообщение в списке чатов
+      setChats(prev => prev.map(chat =>
+        chat.id === selectedChat.id
+          ? { ...chat, last_message: text, last_message_time: new Date().toISOString() }
+          : chat
+      ));
+      
+      socketRef.current.emit('send_message', {
+        chatId: selectedChat.id,
+        message: text,
+        receiverId: selectedChat.other_user_id,
+        tempId: tempId
       });
-
-      if (response.ok) {
-        const newMessage = await response.json();
-        setMessages(prev => [...prev, newMessage]);
-        
-        // Обновляем последнее сообщение в списке чатов
-        setChats(prev => prev.map(chat =>
-          chat.id === selectedChat.id
-            ? { ...chat, last_message: text, last_message_time: new Date().toISOString() }
-            : chat
-        ));
-      } else {
-        setMessageInput(text);
-        console.error('Ошибка отправки');
-      }
-    } catch (error) {
-      console.error('Ошибка:', error);
-      setMessageInput(text);
-    } finally {
+      
       setSending(false);
+    } else {
+      // Fallback на REST API (если WebSocket не подключился)
+      try {
+        const response = await fetch(`/api/chats/${selectedChat.id}/messages`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ message: text })
+        });
+
+        if (response.ok) {
+          const newMessage = await response.json();
+          setMessages(prev => [...prev, newMessage]);
+          
+          // Обновляем последнее сообщение в списке чатов
+          setChats(prev => prev.map(chat =>
+            chat.id === selectedChat.id
+              ? { ...chat, last_message: text, last_message_time: new Date().toISOString() }
+              : chat
+          ));
+        } else {
+          setMessageInput(text);
+          console.error('Ошибка отправки');
+        }
+      } catch (error) {
+        console.error('Ошибка:', error);
+        setMessageInput(text);
+      } finally {
+        setSending(false);
+      }
     }
   };
 
@@ -133,29 +224,6 @@ const ChatPage = () => {
 
   const handleBackToList = () => {
     setSelectedChat(null);
-  };
-
-  const createNewChat = async (userId) => {
-    try {
-      const response = await fetch('/api/chats', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ otherUserId: userId })
-      });
-      if (response.ok) {
-        const { chatId } = await response.json();
-        fetchChats();
-        const newChat = chats.find(c => c.id === chatId);
-        if (newChat) {
-          setSelectedChat(newChat);
-        }
-      }
-    } catch (error) {
-      console.error('Ошибка создания чата:', error);
-    }
   };
 
   const formatMessageTime = (timestamp) => {
