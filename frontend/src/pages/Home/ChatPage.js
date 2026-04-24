@@ -1,82 +1,137 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Send } from 'lucide-react';
+import { Send, ArrowLeft, User, Phone, Video, MoreVertical, Smile, Paperclip } from 'lucide-react';
 import io from 'socket.io-client';
 import './ChatPage.css';
 
 const ChatPage = () => {
   const { user, token } = useAuth();
   const navigate = useNavigate();
-
+  
+  const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 768);
   const [selectedChat, setSelectedChat] = useState(null);
   const [messageInput, setMessageInput] = useState('');
   const [chats, setChats] = useState([]);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-
   const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
+  
+  // WebSocket
   const socketRef = useRef(null);
+  const socketInitialized = useRef(false);
+  const [socketConnected, setSocketConnected] = useState(false);
 
-  /* ================= SOCKET ================= */
+  // Определяем мобильное разрешение
   useEffect(() => {
-    if (!token) return;
+    const handleResize = () => {
+      setIsMobileView(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
+  // Подключение к WebSocket
+  useEffect(() => {
+    const authToken = localStorage.getItem('token');
+    if (!authToken || socketInitialized.current) return;
+    
+    socketInitialized.current = true;
+    
     socketRef.current = io('/', {
-      auth: { token },
-      transports: ['websocket']
+      auth: { token: authToken },
+      transports: ['websocket'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000
     });
-
+    
+    socketRef.current.on('connect', () => {
+      console.log('📡 WebSocket connected');
+      setSocketConnected(true);
+    });
+    
+    socketRef.current.on('disconnect', () => {
+      console.log('📡 WebSocket disconnected');
+      setSocketConnected(false);
+    });
+    
     socketRef.current.on('new_message', (data) => {
-      if (selectedChat?.id === data.chatId) {
+      console.log('📩 Новое сообщение:', data);
+      
+      if (selectedChat && selectedChat.id === data.chatId) {
         setMessages(prev => [...prev, data.message]);
       }
-
-      setChats(prev =>
-        prev.map(chat =>
-          chat.id === data.chatId
-            ? {
-                ...chat,
-                last_message: data.message.message,
-                last_message_time: data.message.created_at
-              }
-            : chat
-        )
-      );
+      
+      setChats(prev => prev.map(chat =>
+        chat.id === data.chatId
+          ? { 
+              ...chat, 
+              last_message: data.message.message, 
+              last_message_time: data.message.created_at 
+            }
+          : chat
+      ));
     });
+    
+    socketRef.current.on('message_sent', (message) => {
+      console.log('✅ Сообщение отправлено:', message);
+      setMessages(prev => prev.map(msg => 
+        msg.id === message.tempId ? { ...message, tempId: undefined } : msg
+      ));
+    });
+    
+    socketRef.current.on('message_error', (data) => {
+      console.error('❌ Ошибка отправки:', data.error);
+    });
+    
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketInitialized.current = false;
+      }
+    };
+  }, [selectedChat]);
 
-    return () => socketRef.current?.disconnect();
-  }, [token, selectedChat]);
-
-  /* ================= DATA ================= */
+  // Загрузка списка чатов
   useEffect(() => {
     if (!token) {
       navigate('/login');
       return;
     }
     fetchChats();
-  }, [token]);
+  }, [token, navigate]);
 
-  useEffect(() => {
-    if (selectedChat) fetchMessages(selectedChat.id);
-  }, [selectedChat]);
-
+  // Автоскролл к последнему сообщению
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Загрузка сообщений при выборе чата
+  useEffect(() => {
+    if (selectedChat) {
+      fetchMessages(selectedChat.id);
+    }
+  }, [selectedChat]);
+
   const fetchChats = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/chats', {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await fetch('/api/chats', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
-
-      const data = await res.json();
-      setChats(data);
-    } catch (e) {
-      console.error(e);
+      if (response.ok) {
+        const data = await response.json();
+        setChats(data);
+      } else if (response.status === 401) {
+        navigate('/login');
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки чатов:', error);
     } finally {
       setLoading(false);
     }
@@ -84,53 +139,82 @@ const ChatPage = () => {
 
   const fetchMessages = async (chatId) => {
     try {
-      const res = await fetch(`/api/chats/${chatId}/messages`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await fetch(`/api/chats/${chatId}/messages`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
-
-      const data = await res.json();
-      setMessages(data);
-    } catch (e) {
-      console.error(e);
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data);
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки сообщений:', error);
     }
   };
 
-  /* ================= SEND ================= */
   const handleSendMessage = () => {
-    if (!messageInput.trim() || !selectedChat) return;
+    if (!messageInput.trim() || !selectedChat || sending) return;
 
     const text = messageInput.trim();
     setMessageInput('');
     setSending(true);
 
-    const tempMessage = {
-      id: Date.now(),
-      sender_id: user.id,
-      message: text,
-      created_at: new Date().toISOString()
-    };
-
-    setMessages(prev => [...prev, tempMessage]);
-
-    setChats(prev =>
-      prev.map(chat =>
+    if (socketConnected && socketRef.current) {
+      const tempId = Date.now();
+      
+      const tempMessage = {
+        id: tempId,
+        sender_id: user?.id,
+        message: text,
+        created_at: new Date().toISOString(),
+        is_read: false
+      };
+      setMessages(prev => [...prev, tempMessage]);
+      
+      setChats(prev => prev.map(chat =>
         chat.id === selectedChat.id
-          ? {
-              ...chat,
-              last_message: text,
-              last_message_time: new Date().toISOString()
-            }
+          ? { ...chat, last_message: text, last_message_time: new Date().toISOString() }
           : chat
-      )
-    );
-
-    socketRef.current?.emit('send_message', {
-      chatId: selectedChat.id,
-      message: text,
-      receiverId: selectedChat.other_user_id
-    });
-
-    setTimeout(() => setSending(false), 200);
+      ));
+      
+      socketRef.current.emit('send_message', {
+        chatId: selectedChat.id,
+        message: text,
+        receiverId: selectedChat.other_user_id,
+        tempId: tempId
+      });
+      
+      setSending(false);
+    } else {
+      fetch(`/api/chats/${selectedChat.id}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ message: text })
+      })
+        .then(response => {
+          if (response.ok) return response.json();
+          throw new Error('Ошибка отправки');
+        })
+        .then(newMessage => {
+          setMessages(prev => [...prev, newMessage]);
+          setChats(prev => prev.map(chat =>
+            chat.id === selectedChat.id
+              ? { ...chat, last_message: text, last_message_time: new Date().toISOString() }
+              : chat
+          ));
+        })
+        .catch(error => {
+          console.error('Ошибка:', error);
+          setMessageInput(text);
+        })
+        .finally(() => {
+          setSending(false);
+        });
+    }
   };
 
   const handleKeyPress = (e) => {
@@ -140,126 +224,317 @@ const ChatPage = () => {
     }
   };
 
-  /* ================= HELPERS ================= */
-  const formatTime = (time) => {
-    if (!time) return '';
-    return new Date(time).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const handleBackToList = () => {
+    setSelectedChat(null);
   };
 
-  /* ================= UI ================= */
-  return (
-    <div className="chat-page">
-      <div className="chat-container desktop">
+  const handleInputFocus = (e) => {
+    setTimeout(() => {
+      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+  };
 
-        {/* ===== SIDEBAR ===== */}
-        <div className="chat-list">
-          <div className="chat-list-header">
-            <h2>Чаты</h2>
-            <button
-              className="new-chat-btn"
-              onClick={() => navigate('/users')}
-            >
-              Новый чат
-            </button>
-          </div>
+  const formatMessageTime = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+    
+    if (diff < 24 * 60 * 60 * 1000) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    return date.toLocaleDateString([], { day: 'numeric', month: 'short' });
+  };
 
-          <div className="chat-list-items">
-            {loading ? (
-              <div className="chat-empty">Загрузка...</div>
-            ) : chats.length === 0 ? (
-              <div className="chat-empty">Нет диалогов</div>
-            ) : (
-              chats.map(chat => (
-                <div
-                  key={chat.id}
-                  className={`chat-list-item ${
-                    selectedChat?.id === chat.id ? 'active' : ''
-                  }`}
-                  onClick={() => setSelectedChat(chat)}
-                >
-                  <div className="avatar-placeholder">
-                    {chat.first_name?.[0] || 'U'}
-                  </div>
+  const formatChatTime = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+    
+    if (diff < 24 * 60 * 60 * 1000) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    if (diff < 7 * 24 * 60 * 60 * 1000) {
+      return date.toLocaleDateString([], { weekday: 'short' });
+    }
+    return date.toLocaleDateString([], { day: 'numeric', month: 'short' });
+  };
 
-                  <div>
-                    <div className="chat-name">
-                      {chat.first_name} {chat.last_name}
-                    </div>
-                    <div className="chat-last-message">
-                      {chat.last_message || '...'}
-                    </div>
-                  </div>
+  // Десктопная версия
+  if (!isMobileView) {
+    return (
+      <div className="chat-page">
+        <div className="chat-container desktop">
+          {/* Список чатов */}
+          <div className="chat-list">
+            <div className="chat-list-header">
+              <h2>Сообщения</h2>
+              <button className="new-chat-btn" onClick={() => navigate('/users')}>
+                + Новый чат
+              </button>
+            </div>
+            <div className="chat-list-items">
+              {loading ? (
+                <div className="chat-loading">
+                  <div className="chat-loading-spinner"></div>
+                  <p>Загрузка чатов...</p>
                 </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* ===== CHAT ===== */}
-        <div className="chat-area">
-          {!selectedChat ? (
-            <div className="chat-empty">Выберите чат</div>
-          ) : (
-            <>
-              {/* HEADER */}
-              <div className="chat-header">
-                <h3>
-                  {selectedChat.first_name} {selectedChat.last_name}
-                </h3>
-              </div>
-
-              {/* MESSAGES */}
-              <div className="chat-messages">
-                {messages.map(msg => (
+              ) : chats.length === 0 ? (
+                <div className="chat-empty-list">
+                  <div className="chat-empty-icon">💬</div>
+                  <p>У вас пока нет диалогов</p>
+                  <button className="start-chat-btn" onClick={() => navigate('/users')}>
+                    Начать диалог
+                  </button>
+                </div>
+              ) : (
+                chats.map(chat => (
                   <div
-                    key={msg.id}
-                    className={`message ${
-                      msg.sender_id === user.id
-                        ? 'message-own'
-                        : 'message-other'
-                    }`}
+                    key={chat.id}
+                    className={`chat-list-item ${selectedChat?.id === chat.id ? 'active' : ''}`}
+                    onClick={() => setSelectedChat(chat)}
                   >
-                    <div className="message-bubble">
-                      {msg.message}
-                      <div className="message-time">
-                        {formatTime(msg.created_at)}
+                    <div className="chat-avatar">
+                      <div className="avatar-placeholder">
+                        {chat.first_name?.[0] || chat.last_name?.[0] || 'U'}
+                      </div>
+                    </div>
+                    <div className="chat-info">
+                      <div className="chat-name">
+                        {chat.first_name} {chat.last_name}
+                      </div>
+                      <div className="chat-last-message">
+                        {chat.last_message || 'Новое сообщение'}
+                      </div>
+                    </div>
+                    <div className="chat-meta">
+                      <div className="chat-time">
+                        {formatChatTime(chat.last_message_time)}
                       </div>
                     </div>
                   </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
+                ))
+              )}
+            </div>
+          </div>
 
-              {/* INPUT */}
-              <div className="chat-input-area">
-                <textarea
-                  className="chat-input"
-                  placeholder="Сообщение..."
-                  value={messageInput}
-                  onChange={(e) => {
-                    setMessageInput(e.target.value);
-                    e.target.style.height = "auto";
-                    e.target.style.height =
-                      e.target.scrollHeight + "px";
-                  }}
-                  onKeyDown={handleKeyPress}
-                  rows={1}
-                />
+          {/* Область переписки */}
+          <div className="chat-area">
+            {selectedChat ? (
+              <>
+                <div className="chat-header">
+                  <div className="chat-header-info">
+                    <div className="chat-avatar">
+                      <div className="avatar-placeholder">
+                        {selectedChat.first_name?.[0] || selectedChat.last_name?.[0] || 'U'}
+                      </div>
+                    </div>
+                    <div className="chat-header-details">
+                      <h3>{selectedChat.first_name} {selectedChat.last_name}</h3>
+                      <span className="chat-status">в сети</span>
+                    </div>
+                  </div>
+                  <div className="chat-header-actions">
+                    <button className="chat-action-btn" title="Позвонить">
+                      <Phone size={18} />
+                    </button>
+                    <button className="chat-action-btn" title="Видеозвонок">
+                      <Video size={18} />
+                    </button>
+                    <button className="chat-action-btn" title="Ещё">
+                      <MoreVertical size={18} />
+                    </button>
+                  </div>
+                </div>
 
-                <button
-                  className="send-btn"
-                  onClick={handleSendMessage}
-                  disabled={!messageInput.trim() || sending}
-                >
-                  <Send size={16} />
-                </button>
+                <div className="chat-messages" ref={chatContainerRef}>
+                  {messages.length === 0 ? (
+                    <div className="chat-empty-messages">
+                      <div className="empty-messages-icon">💬</div>
+                      <p>Напишите первое сообщение</p>
+                    </div>
+                  ) : (
+                    messages.map((msg, index) => (
+                      <div
+                        key={msg.id || index}
+                        className={`message ${msg.sender_id === user?.id ? 'message-own' : 'message-other'}`}
+                      >
+                        <div className="message-bubble">
+                          <div className="message-text">{msg.message}</div>
+                          <div className="message-time">
+                            {formatMessageTime(msg.created_at)}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                <div className="chat-input-area">
+                  <button className="attach-btn" title="Прикрепить файл">
+                    <Paperclip size={20} />
+                  </button>
+                  <button className="emoji-btn" title="Смайлы">
+                    <Smile size={20} />
+                  </button>
+                  <textarea
+                    className="chat-input"
+                    placeholder="Введите сообщение..."
+                    value={messageInput}
+                    onChange={(e) => setMessageInput(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    onFocus={handleInputFocus}
+                    rows={1}
+                    disabled={sending}
+                  />
+                  <button 
+                    className="send-btn" 
+                    onClick={handleSendMessage} 
+                    disabled={sending || !messageInput.trim()}
+                    title="Отправить"
+                  >
+                    <Send size={18} />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="chat-empty">
+                <div className="chat-empty-icon">💬</div>
+                <h3>Выберите чат</h3>
+                <p>Нажмите на диалог, чтобы начать общение</p>
               </div>
-            </>
-          )}
+            )}
+          </div>
         </div>
+      </div>
+    );
+  }
+
+  // Мобильная версия
+  return (
+    <div className="chat-page">
+      <div className="chat-container mobile">
+        {!selectedChat ? (
+          <div className="chat-list">
+            <div className="chat-list-header">
+              <h2>Сообщения</h2>
+              <button className="new-chat-btn" onClick={() => navigate('/users')}>
+                +
+              </button>
+            </div>
+            <div className="chat-list-items">
+              {loading ? (
+                <div className="chat-loading">
+                  <div className="chat-loading-spinner"></div>
+                  <p>Загрузка...</p>
+                </div>
+              ) : chats.length === 0 ? (
+                <div className="chat-empty-list">
+                  <div className="chat-empty-icon">💬</div>
+                  <p>У вас пока нет диалогов</p>
+                </div>
+              ) : (
+                chats.map(chat => (
+                  <div
+                    key={chat.id}
+                    className="chat-list-item"
+                    onClick={() => setSelectedChat(chat)}
+                  >
+                    <div className="chat-avatar">
+                      <div className="avatar-placeholder">
+                        {chat.first_name?.[0] || chat.last_name?.[0] || 'U'}
+                      </div>
+                    </div>
+                    <div className="chat-info">
+                      <div className="chat-name">
+                        {chat.first_name} {chat.last_name}
+                      </div>
+                      <div className="chat-last-message">
+                        {chat.last_message || 'Новое сообщение'}
+                      </div>
+                    </div>
+                    <div className="chat-meta">
+                      <div className="chat-time">
+                        {formatChatTime(chat.last_message_time)}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="chat-header">
+              <button className="back-btn-chat" onClick={handleBackToList}>
+                <ArrowLeft size={24} />
+              </button>
+              <div className="chat-header-info">
+                <div className="chat-avatar">
+                  <div className="avatar-placeholder">
+                    {selectedChat.first_name?.[0] || selectedChat.last_name?.[0] || 'U'}
+                  </div>
+                </div>
+                <div className="chat-header-details">
+                  <h3>{selectedChat.first_name} {selectedChat.last_name}</h3>
+                  <span className="chat-status">в сети</span>
+                </div>
+              </div>
+              <button className="menu-btn-chat">
+                <MoreVertical size={20} />
+              </button>
+            </div>
+
+            <div className="chat-messages" ref={chatContainerRef}>
+              {messages.length === 0 ? (
+                <div className="chat-empty-messages">
+                  <div className="empty-messages-icon">💬</div>
+                  <p>Напишите первое сообщение</p>
+                </div>
+              ) : (
+                messages.map((msg, index) => (
+                  <div
+                    key={msg.id || index}
+                    className={`message ${msg.sender_id === user?.id ? 'message-own' : 'message-other'}`}
+                  >
+                    <div className="message-bubble">
+                      <div className="message-text">{msg.message}</div>
+                      <div className="message-time">
+                        {formatMessageTime(msg.created_at)}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            <div className="chat-input-area">
+              <button className="attach-btn" onClick={() => console.log('Attach')}>
+                <Paperclip size={20} />
+              </button>
+              <textarea
+                className="chat-input"
+                placeholder="Сообщение..."
+                value={messageInput}
+                onChange={(e) => setMessageInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                onFocus={handleInputFocus}
+                rows={1}
+                disabled={sending}
+              />
+              <button 
+                className="send-btn" 
+                onClick={handleSendMessage} 
+                disabled={sending || !messageInput.trim()}
+              >
+                <Send size={18} />
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
