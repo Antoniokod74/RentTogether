@@ -12,25 +12,29 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);  // ← ДОБАВЛЕНО
   const [isLoading, setIsLoading] = useState(true);
 
   // Функция для синхронизации с localStorage
   const syncWithLocalStorage = () => {
-    const token = localStorage.getItem('token');
+    const storedToken = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
     
-    if (token && userData) {
+    if (storedToken && userData) {
       try {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
+        setToken(storedToken);  // ← ДОБАВЛЕНО
       } catch (error) {
         console.error('Error parsing user data:', error);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         setUser(null);
+        setToken(null);  // ← ДОБАВЛЕНО
       }
     } else {
       setUser(null);
+      setToken(null);  // ← ДОБАВЛЕНО
     }
   };
 
@@ -62,9 +66,10 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  const login = (userData, token) => {
+  const login = (userData, authToken) => {
     setUser(userData);
-    localStorage.setItem('token', token);
+    setToken(authToken);  // ← ДОБАВЛЕНО
+    localStorage.setItem('token', authToken);
     localStorage.setItem('user', JSON.stringify(userData));
     // Триггерим событие для обновления других компонентов
     window.dispatchEvent(new Event('auth-state-change'));
@@ -72,6 +77,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     setUser(null);
+    setToken(null);  // ← ДОБАВЛЕНО
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     window.dispatchEvent(new Event('auth-state-change'));
@@ -79,7 +85,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
-    token,
+    token,           // ← ТЕПЕРЬ ЕСТЬ
     login,
     logout,
     isLoading
