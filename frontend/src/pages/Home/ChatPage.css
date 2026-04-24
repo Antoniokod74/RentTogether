@@ -236,103 +236,82 @@ html, body {
 }
 
 
-/* ================================
-   MOBILE CHAT - FIXED (2025 UX)
-================================ */
-
 @media (max-width: 768px) {
 
-  html, body {
-    overflow: hidden;
-  }
+  /* ================================
+     ROOT CHAT PAGE (LOCAL FIX)
+  ================================ */
 
-  /* ===== PAGE ===== */
   .chat-page {
-    height: 100vh;
+    height: 100dvh; /* modern mobile viewport */
+    height: 100vh;  /* fallback */
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
   }
 
-  /* ===== CONTAINER ===== */
+  /* ================================
+     CONTAINER FITS SCREEN
+  ================================ */
+
   .chat-container.desktop {
-    grid-template-columns: 1fr;
-    height: 100vh;
+    height: 100%;
+    display: block;
   }
 
-  /* ================= CHAT LIST ================= */
-  .chat-list {
-    width: 100%;
-    height: 100vh;
-    overflow: hidden;
-  }
+  /* ================================
+     CHAT AREA = FULL SCREEN FLEX
+  ================================ */
 
-  .chat-list-header {
-    padding: 14px;
-  }
-
-  .chat-list-items {
-    flex: 1;
-    overflow-y: auto;
-    padding-bottom: 80px;
-  }
-
-  .chat-list-item {
-    padding: 12px;
-    gap: 12px;
-  }
-
-  /* ================= CHAT AREA ================= */
   .chat-area {
     position: fixed;
     inset: 0;
-    height: 100vh;
+
     display: flex;
     flex-direction: column;
-    background: radial-gradient(circle at 20% 20%, #0f172a, #020617);
-    z-index: 20;
+
+    height: 100dvh;
+    height: 100vh;
+
     overflow: hidden;
+    z-index: 20;
   }
 
-  /* ===== HEADER FIXED ===== */
+  /* ================================
+     HEADER (FIXED TOP)
+  ================================ */
+
   .chat-header {
     flex-shrink: 0;
     padding: 12px 14px;
+
     background: rgba(2,6,23,0.75);
-    backdrop-filter: blur(16px);
+    backdrop-filter: blur(14px);
+
     border-bottom: 1px solid rgba(255,255,255,0.08);
-
-    display: flex;
-    align-items: center;
-    gap: 10px;
   }
 
-  /* back button fix (если есть) */
-  .chat-header button,
-  .back-btn-chat {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.06);
-    border: none;
-    color: white;
-  }
+  /* ================================
+     MESSAGES (AUTO STRETCH AREA)
+  ================================ */
 
-  /* ===== MESSAGES (MAIN SCROLL AREA) ===== */
   .chat-messages {
     flex: 1;
-    min-height: 0;
+    min-height: 0; /* CRITICAL FIX */
     overflow-y: auto;
+
     padding: 12px;
+
     display: flex;
     flex-direction: column;
     gap: 8px;
 
-    /* smooth scrolling mobile */
     -webkit-overflow-scrolling: touch;
   }
 
-  /* message sizing */
+  /* messages width */
   .message {
-    max-width: 82%;
+    max-width: 85%;
   }
 
   .message-bubble {
@@ -341,27 +320,31 @@ html, body {
     border-radius: 14px;
   }
 
-  /* ===== INPUT FIXED (CRITICAL) ===== */
+  /* ================================
+     INPUT (FIXED BOTTOM SAFE)
+  ================================ */
+
   .chat-input-area {
     flex-shrink: 0;
+
     display: flex;
     gap: 8px;
-    padding: 10px;
 
+    padding: 10px;
     padding-bottom: calc(10px + env(safe-area-inset-bottom));
 
     background: rgba(2,6,23,0.75);
-    backdrop-filter: blur(16px);
+    backdrop-filter: blur(14px);
 
     border-top: 1px solid rgba(255,255,255,0.08);
   }
 
-  /* textarea */
+  /* input field */
   .chat-input {
     flex: 1;
     resize: none;
 
-    font-size: 0.95rem;
+    max-height: 120px;
 
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.10);
@@ -370,6 +353,7 @@ html, body {
     padding: 10px 12px;
 
     color: white;
+    font-size: 0.95rem;
   }
 
   .chat-input:focus {
@@ -381,10 +365,11 @@ html, body {
   .send-btn {
     width: 44px;
     height: 44px;
+
     border-radius: 14px;
+    border: none;
 
     background: #3b82f6;
-    border: none;
     color: white;
   }
 
@@ -392,14 +377,27 @@ html, body {
     transform: scale(0.95);
   }
 
-  /* ================= PERFORMANCE FIX ================= */
+  /* ================================
+     CHAT LIST FIX (when visible)
+  ================================ */
+
+  .chat-list {
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  .chat-list-items {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  /* ================================
+     SAFE SCROLL FIX
+  ================================ */
+
   .chat-messages,
   .chat-list-items {
     overscroll-behavior: contain;
-  }
-
-  /* ================= SAFE AREA FIX (iPhone) ================= */
-  .chat-area {
-    padding-bottom: env(safe-area-inset-bottom);
   }
 }
