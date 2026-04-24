@@ -458,8 +458,10 @@ const ChatPage = () => {
             </div>
 
             <div className="chat-input-area">
-              <button className="attach-btn"><Paperclip size={20} /></button>
-              <textarea
+            <button className="attach-btn" onClick={() => console.log('Attach')}>
+                <Paperclip size={20} />
+            </button>
+            <textarea
                 className="chat-input"
                 placeholder="Сообщение..."
                 value={messageInput}
@@ -467,10 +469,10 @@ const ChatPage = () => {
                 onKeyPress={handleKeyPress}
                 rows={1}
                 disabled={sending}
-              />
-              <button className="send-btn" onClick={handleSendMessage} disabled={sending}>
+            />
+            <button className="send-btn" onClick={handleSendMessage} disabled={sending}>
                 <Send size={20} />
-              </button>
+            </button>
             </div>
           </>
         )}
