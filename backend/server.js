@@ -75,6 +75,7 @@ const authenticateToken = (req, res, next) => {
       return res.status(403).json({ error: 'Недействительный токен' });
     }
     req.userId = user.userId;
+    req.userId = user.id;
     next();
   });
 };
