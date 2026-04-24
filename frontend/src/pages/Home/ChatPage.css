@@ -15,7 +15,7 @@
   border: 1px solid #334155;
 }
 
-/* Десктопная версия - 2 колонки */
+/* Десктопная версия */
 .chat-container.desktop {
   display: grid;
   grid-template-columns: 320px 1fr;
@@ -26,6 +26,7 @@
 /* Мобильная версия */
 .chat-container.mobile {
   height: calc(100vh - 80px);
+  border-radius: 0;
 }
 
 /* Список чатов */
@@ -90,6 +91,42 @@
   border-left: 3px solid #3b82f6;
 }
 
+/* Пустое состояние списка */
+.chat-empty-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  color: #64748b;
+}
+
+.chat-empty-list .chat-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.chat-empty-list p {
+  margin-bottom: 16px;
+}
+
+.start-chat-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.chat-loading {
+  text-align: center;
+  padding: 40px;
+  color: #64748b;
+}
+
 /* Аватар */
 .chat-avatar {
   flex-shrink: 0;
@@ -108,13 +145,6 @@
   color: white;
 }
 
-.chat-avatar img {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
 /* Информация чата */
 .chat-info {
   flex: 1;
@@ -125,6 +155,7 @@
   font-weight: 600;
   color: #f1f5f9;
   margin-bottom: 4px;
+  font-size: 0.95rem;
 }
 
 .chat-last-message {
@@ -145,16 +176,6 @@
   font-size: 0.7rem;
   color: #64748b;
   margin-bottom: 4px;
-}
-
-.chat-unread {
-  background: #3b82f6;
-  color: white;
-  font-size: 0.7rem;
-  padding: 2px 6px;
-  border-radius: 10px;
-  min-width: 18px;
-  display: inline-block;
 }
 
 /* Область переписки */
@@ -178,10 +199,6 @@
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.chat-header-info .chat-avatar {
-  cursor: pointer;
 }
 
 .chat-header-details h3 {
@@ -250,6 +267,8 @@
   padding: 10px 14px;
   border-radius: 18px;
   position: relative;
+  max-width: 100%;
+  word-wrap: break-word;
 }
 
 .message-own .message-bubble {
@@ -321,6 +340,10 @@
   border-color: #3b82f6;
 }
 
+.chat-input:disabled {
+  opacity: 0.5;
+}
+
 .send-btn {
   background: #3b82f6;
   border: none;
@@ -336,6 +359,11 @@
 
 .send-btn:hover {
   background: #2563eb;
+}
+
+.send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Пустое состояние */

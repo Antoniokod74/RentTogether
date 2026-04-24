@@ -1585,6 +1585,134 @@ app.get('/api/test/simple', async (req, res) => {
   }
 });
 
+// ========== НАЧАЛО КОДА ЧАТА ==========
+// Получить список чатов пользователя
+app.get('/api/chats', authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const result = await pool.query(
+      `SELECT c.*, 
+        u.id as other_user_id, u.first_name, u.last_name,
+        (SELECT message FROM messages WHERE chat_id = c.id ORDER BY created_at DESC LIMIT 1) as last_message,
+        (SELECT created_at FROM messages WHERE chat_id = c.id ORDER BY created_at DESC LIMIT 1) as last_message_time
+      FROM chats c
+      JOIN users u ON (u.id = c.user1_id OR u.id = c.user2_id)
+      WHERE (c.user1_id = $1 OR c.user2_id = $1) AND u.id != $1
+      ORDER BY last_message_time DESC NULLS LAST`,
+      [userId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Ошибка загрузки чатов' });
+  }
+});
+
+// Получить сообщения чата
+app.get('/api/chats/:chatId/messages', authenticateToken, async (req, res) => {
+  const { chatId } = req.params;
+  const userId = req.user.id;
+  try {
+    const chatCheck = await pool.query(
+      'SELECT id FROM chats WHERE id = $1 AND (user1_id = $2 OR user2_id = $2)',
+      [chatId, userId]
+    );
+    if (chatCheck.rows.length === 0) {
+      return res.status(403).json({ error: 'Нет доступа к этому чату' });
+    }
+    
+    const result = await pool.query(
+      `SELECT m.*, u.first_name, u.last_name 
+       FROM messages m
+       JOIN users u ON u.id = m.sender_id
+       WHERE m.chat_id = $1 
+       ORDER BY m.created_at ASC`,
+      [chatId]
+    );
+    
+    await pool.query(
+      `UPDATE messages SET is_read = true 
+       WHERE chat_id = $1 AND sender_id != $2 AND is_read = false`,
+      [chatId, userId]
+    );
+    
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Ошибка загрузки сообщений' });
+  }
+});
+
+// Отправить сообщение
+app.post('/api/chats/:chatId/messages', authenticateToken, async (req, res) => {
+  const { chatId } = req.params;
+  const { message } = req.body;
+  const userId = req.user.id;
+  
+  if (!message || message.trim() === '') {
+    return res.status(400).json({ error: 'Сообщение не может быть пустым' });
+  }
+  
+  try {
+    const chatCheck = await pool.query(
+      'SELECT id FROM chats WHERE id = $1 AND (user1_id = $2 OR user2_id = $2)',
+      [chatId, userId]
+    );
+    if (chatCheck.rows.length === 0) {
+      return res.status(403).json({ error: 'Нет доступа к этому чату' });
+    }
+    
+    const result = await pool.query(
+      `INSERT INTO messages (chat_id, sender_id, message) 
+       VALUES ($1, $2, $3) 
+       RETURNING *`,
+      [chatId, userId, message.trim()]
+    );
+    
+    await pool.query(
+      'UPDATE chats SET updated_at = NOW() WHERE id = $1',
+      [chatId]
+    );
+    
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Ошибка отправки сообщения' });
+  }
+});
+
+// Создать новый чат
+app.post('/api/chats', authenticateToken, async (req, res) => {
+  const { otherUserId } = req.body;
+  const userId = req.user.id;
+  
+  if (userId === otherUserId) {
+    return res.status(400).json({ error: 'Нельзя создать чат с самим собой' });
+  }
+  
+  try {
+    let existingChat = await pool.query(
+      'SELECT id FROM chats WHERE (user1_id = $1 AND user2_id = $2) OR (user1_id = $2 AND user2_id = $1)',
+      [userId, otherUserId]
+    );
+    
+    if (existingChat.rows.length > 0) {
+      return res.json({ chatId: existingChat.rows[0].id });
+    }
+    
+    const result = await pool.query(
+      'INSERT INTO chats (user1_id, user2_id) VALUES ($1, $2) RETURNING id',
+      [userId, otherUserId]
+    );
+    
+    res.json({ chatId: result.rows[0].id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Ошибка создания чата' });
+  }
+});
+// ========== КОНЕЦ КОДА ЧАТА ==========
+
 // ========== ДОБАВЛЕНА КАРТА МАРШРУТОВ ПЕРЕД ЗАПУСКОМ СЕРВЕРА ==========
 app.use(expressRouterDiagram({
   generateWeb: true,
