@@ -8,6 +8,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import PDFDocument from 'pdfkit';
+import expressRouterDiagram from 'express-router-diagram'; // добавлено для карты маршрутов
 
 dotenv.config();
 
@@ -17,7 +18,6 @@ const PORT = process.env.PORT || 5000;
 // Получаем __dirname для ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 
 const fontPath = path.join(__dirname, 'fonts', 'DejaVuSans.ttf');
 console.log('🖋️ Путь к шрифту:', fontPath);
@@ -1222,18 +1222,17 @@ app.get('/api/contracts/booking/:bookingId/download', async (req, res) => {
     
     // Строки таблицы
     const carSpecs = [
-  ['Марка, модель', `${data.brand || ''} ${data.model || ''}`],
-  ['Год выпуска', data.year || ''],
-  ['Гос. номер', data.license_plate || ''],
-  ['VIN', data.vin || ''],
-  ['Цвет', data.color || ''],
-  ['Класс', data.car_class || ''],
-  ['КПП', data.transmission || ''],
-  ['Топливо', data.fuel_type || ''],
-  ['Объем', data.engine_capacity ? `${data.engine_capacity} л` : ''],
-  ['Мощность', data.horsepower ? `${data.horsepower} л.с.` : '']
-  // Убрали менее важные поля чтобы таблица влезла
-];
+      ['Марка, модель', `${data.brand || ''} ${data.model || ''}`],
+      ['Год выпуска', data.year || ''],
+      ['Гос. номер', data.license_plate || ''],
+      ['VIN', data.vin || ''],
+      ['Цвет', data.color || ''],
+      ['Класс', data.car_class || ''],
+      ['КПП', data.transmission || ''],
+      ['Топливо', data.fuel_type || ''],
+      ['Объем', data.engine_capacity ? `${data.engine_capacity} л` : ''],
+      ['Мощность', data.horsepower ? `${data.horsepower} л.с.` : '']
+    ];
     
     let rowY = carStartY + 30;
     
@@ -1254,35 +1253,35 @@ app.get('/api/contracts/booking/:bookingId/download', async (req, res) => {
     });
     
     doc.y = rowY + 10;
-
-// СБРОСЬ X НА ЛЕВЫЙ КРАЙ ДО ЗАГОЛОВКА
-doc.x = 50;
-
-// РАЗДЕЛ 4: СРОК АРЕНДЫ И УСЛОВИЯ
-doc.moveDown(1);
-doc.fontSize(13)
-   .fillColor('#000')
-   .text('3. СРОК АРЕНДЫ И УСЛОВИЯ ПЕРЕДАЧИ', { align: 'left', underline: true, bold: true });
-
-doc.moveDown(0.5);
-
-// ВАЖНО: Сбрось позицию X после таблицы
-doc.x = 50; // ← ДОБАВЬ ЭТУ СТРОКУ!
-
-doc.fontSize(11)
-   .fillColor('#333');
-
-const startDate = formatDateFull(data.start_date);
-const endDate = formatDateFull(data.end_date);
-
-doc.text(`3.1. Срок аренды транспортного средства составляет с ${startDate} по ${endDate} включительно.`);
-doc.text(`3.2. Продолжительность аренды: ${data.total_days || 0} (${data.total_days === 1 ? 'один' : data.total_days} ${data.total_days === 1 ? 'день' : data.total_days < 5 ? 'дня' : 'дней'}) календарных.`);
-doc.text(`3.3. Место получения транспортного средства: ${data.car_address || 'адрес согласовывается сторонами дополнительно'}.`);
-doc.text(`3.4. Место возврата транспортного средства: ${data.car_address || 'адрес согласовывается сторонами дополнительно'}.`);
-doc.text('3.5. Арендодатель обязуется передать транспортное средство в технически исправном состоянии, с полным баком топлива, чистое снаружи и внутри.');
-doc.text('3.6. Арендатор обязуется вернуть транспортное средство в том же состоянии, с учетом нормального износа.');
     
-// РАЗДЕЛ 5: СТОИМОСТЬ АРЕНДЫ И ПОРЯДОК РАСЧЕТОВ
+    // СБРОСЬ X НА ЛЕВЫЙ КРАЙ ДО ЗАГОЛОВКА
+    doc.x = 50;
+    
+    // РАЗДЕЛ 4: СРОК АРЕНДЫ И УСЛОВИЯ
+    doc.moveDown(1);
+    doc.fontSize(13)
+       .fillColor('#000')
+       .text('3. СРОК АРЕНДЫ И УСЛОВИЯ ПЕРЕДАЧИ', { align: 'left', underline: true, bold: true });
+    
+    doc.moveDown(0.5);
+    
+    // ВАЖНО: Сбрось позицию X после таблицы
+    doc.x = 50; // ← ДОБАВЬ ЭТУ СТРОКУ!
+    
+    doc.fontSize(11)
+       .fillColor('#333');
+    
+    const startDate = formatDateFull(data.start_date);
+    const endDate = formatDateFull(data.end_date);
+    
+    doc.text(`3.1. Срок аренды транспортного средства составляет с ${startDate} по ${endDate} включительно.`);
+    doc.text(`3.2. Продолжительность аренды: ${data.total_days || 0} (${data.total_days === 1 ? 'один' : data.total_days} ${data.total_days === 1 ? 'день' : data.total_days < 5 ? 'дня' : 'дней'}) календарных.`);
+    doc.text(`3.3. Место получения транспортного средства: ${data.car_address || 'адрес согласовывается сторонами дополнительно'}.`);
+    doc.text(`3.4. Место возврата транспортного средства: ${data.car_address || 'адрес согласовывается сторонами дополнительно'}.`);
+    doc.text('3.5. Арендодатель обязуется передать транспортное средство в технически исправном состоянии, с полным баком топлива, чистое снаружи и внутри.');
+    doc.text('3.6. Арендатор обязуется вернуть транспортное средство в том же состоянии, с учетом нормального износа.');
+    
+    // РАЗДЕЛ 5: СТОИМОСТЬ АРЕНДЫ И ПОРЯДОК РАСЧЕТОВ
     doc.moveDown(1.5);
     doc.fontSize(13)
        .fillColor('#000')
@@ -1543,7 +1542,7 @@ app.get('/api/test/db', async (req, res) => {
       database_time: dbResult.rows[0].time,
       tables: tablesResult.rows.map(t => t.table_name),
       has_bookings_table: hasBookings,
-      bookings_count: boo0kingsCount
+      bookings_count: bookingsCount
     });
     
   } catch (error) {
@@ -1586,8 +1585,16 @@ app.get('/api/test/simple', async (req, res) => {
   }
 });
 
+// ========== ДОБАВЛЕНА КАРТА МАРШРУТОВ ПЕРЕД ЗАПУСКОМ СЕРВЕРА ==========
+app.use(expressRouterDiagram({
+  generateWeb: true,
+  webRoute: 'express-routes'
+}));
+
+// Запуск сервера
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📡 Health check: http://localhost:${PORT}/api/health`);
   console.log(`📁 Uploads directory: ${uploadsDir}`);
+  console.log(`🗺️  Карта маршрутов доступна по адресу: http://localhost:${PORT}/express-routes`);
 });
