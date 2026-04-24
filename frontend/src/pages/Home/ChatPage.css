@@ -23,15 +23,6 @@
   min-height: 500px;
 }
 
-/* Мобильная версия */
-.chat-container.mobile {
-  height: 100vh;
-  border-radius: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
 /* Список чатов */
 .chat-list {
   background: #0f172a;
@@ -426,6 +417,7 @@
   .chat-page {
     padding-top: 0;
     height: 100vh;
+    height: -webkit-fill-available;
     overflow: hidden;
     position: fixed;
     top: 0;
@@ -435,7 +427,8 @@
   }
 
   .chat-container.mobile {
-    height: 100vh;
+    height: 100%;
+    height: -webkit-fill-available;
     border-radius: 0;
     display: flex;
     flex-direction: column;
@@ -467,6 +460,7 @@
     flex-direction: column;
     overflow: hidden;
     flex: 1;
+    min-height: 0;
   }
 
   /* Сообщения - скроллится */
@@ -475,14 +469,16 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding: 16px;
+    min-height: 0;
   }
 
-  /* Поле ввода - видимое */
+  /* Поле ввода - с учётом безопасной зоны */
   .chat-container.mobile .chat-input-area {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 16px;
+    padding: 10px 12px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
     background: #0f172a;
     border-top: 1px solid #334155;
     flex-shrink: 0;
@@ -493,7 +489,7 @@
     background: #1e293b;
     border: 1px solid #334155;
     border-radius: 20px;
-    padding: 10px 16px;
+    padding: 8px 14px;
     color: #f1f5f9;
     font-size: 0.9rem;
     resize: none;
@@ -505,7 +501,7 @@
     background: #3b82f6;
     border: none;
     color: white;
-    padding: 8px 16px;
+    padding: 8px 14px;
     border-radius: 20px;
     cursor: pointer;
     display: flex;
@@ -538,6 +534,7 @@
   /* Шапка фиксированная */
   .chat-container.mobile .chat-header {
     flex-shrink: 0;
+    padding: 10px 16px;
   }
 
   /* Убираем лишние отступы */
@@ -556,59 +553,10 @@
   }
 }
 
-/* Для очень маленьких экранов */
-@media (max-width: 480px) {
-  .chat-container.mobile .chat-messages {
-    padding: 12px;
-  }
-
-  .message-bubble {
-    padding: 8px 12px;
-  }
-
-  .message-text {
-    font-size: 0.85rem;
-  }
-
-  .chat-container.mobile .chat-input {
-    font-size: 0.85rem;
-    padding: 8px 12px;
-  }
-
-  .chat-container.mobile .send-btn {
-    padding: 6px 12px;
-  }
-
-  .chat-header {
-    padding: 10px 16px;
-  }
-
-  .chat-header-details h3 {
-    font-size: 0.9rem;
-  }
-}
-
-/* Прокрутка */
-.chat-list-items::-webkit-scrollbar,
-.chat-messages::-webkit-scrollbar {
-  width: 6px;
-}
-
-.chat-list-items::-webkit-scrollbar-track,
-.chat-messages::-webkit-scrollbar-track {
-  background: #0f172a;
-}
-
-.chat-list-items::-webkit-scrollbar-thumb,
-.chat-messages::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 3px;
-}
-
-/* Специально для вертикальной ориентации на мобильных */
+/* Вертикальная ориентация на мобильных - компактный режим */
 @media (max-width: 768px) and (orientation: portrait) {
   .chat-container.mobile .chat-header {
-    padding: 8px 12px;
+    padding: 6px 12px;
   }
 
   .chat-container.mobile .chat-header-details h3 {
@@ -628,15 +576,16 @@
   }
 
   .message-text {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
   }
 
   .chat-container.mobile .chat-input-area {
-    padding: 8px 12px;
+    padding: 6px 12px;
+    padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
   }
 
   .chat-container.mobile .chat-input {
-    padding: 8px 12px;
+    padding: 6px 12px;
     font-size: 0.85rem;
   }
 
@@ -665,10 +614,10 @@
   }
 }
 
-/* Для очень маленьких экранов в вертикальной ориентации (iPhone SE и подобные) */
+/* Для очень маленьких экранов (iPhone SE, 5, 5S) */
 @media (max-width: 380px) and (orientation: portrait) {
   .chat-container.mobile .chat-header {
-    padding: 6px 10px;
+    padding: 4px 10px;
   }
 
   .chat-container.mobile .chat-messages {
@@ -677,19 +626,51 @@
   }
 
   .chat-container.mobile .chat-input-area {
-    padding: 6px 10px;
+    padding: 4px 10px;
+    padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
   }
 
   .message-bubble {
-    padding: 5px 8px;
+    padding: 4px 8px;
   }
 
   .message-text {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
   }
 
   .chat-container.mobile .chat-input {
-    padding: 6px 10px;
+    padding: 5px 10px;
     font-size: 0.8rem;
   }
+
+  .avatar-placeholder {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+
+  .chat-name {
+    font-size: 0.85rem;
+  }
+
+  .chat-last-message {
+    font-size: 0.7rem;
+  }
+}
+
+/* Прокрутка */
+.chat-list-items::-webkit-scrollbar,
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-list-items::-webkit-scrollbar-track,
+.chat-messages::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+.chat-list-items::-webkit-scrollbar-thumb,
+.chat-messages::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
 }

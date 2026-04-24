@@ -33,6 +33,18 @@ const ChatPage = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Динамическая высота на мобильных
+  useEffect(() => {
+    if (isMobileView) {
+      const setVH = () => {
+        document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+      };
+      setVH();
+      window.addEventListener('resize', setVH);
+      return () => window.removeEventListener('resize', setVH);
+    }
+  }, [isMobileView]);
+
   // Блокировка скролла body на мобильных при открытом чате
   useEffect(() => {
     if (isMobileView && selectedChat) {
@@ -206,7 +218,6 @@ const ChatPage = () => {
       
       setSending(false);
     } else {
-      // Fallback на REST API
       fetch(`/api/chats/${selectedChat.id}/messages`, {
         method: 'POST',
         headers: {
@@ -246,6 +257,12 @@ const ChatPage = () => {
 
   const handleBackToList = () => {
     setSelectedChat(null);
+  };
+
+  const handleInputFocus = (e) => {
+    setTimeout(() => {
+      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
   };
 
   const formatMessageTime = (timestamp) => {
@@ -363,6 +380,7 @@ const ChatPage = () => {
                     value={messageInput}
                     onChange={(e) => setMessageInput(e.target.value)}
                     onKeyPress={handleKeyPress}
+                    onFocus={handleInputFocus}
                     rows={1}
                     disabled={sending}
                   />
@@ -458,21 +476,22 @@ const ChatPage = () => {
             </div>
 
             <div className="chat-input-area">
-            <button className="attach-btn" onClick={() => console.log('Attach')}>
+              <button className="attach-btn" onClick={() => console.log('Attach')}>
                 <Paperclip size={20} />
-            </button>
-            <textarea
+              </button>
+              <textarea
                 className="chat-input"
                 placeholder="Сообщение..."
                 value={messageInput}
                 onChange={(e) => setMessageInput(e.target.value)}
                 onKeyPress={handleKeyPress}
+                onFocus={handleInputFocus}
                 rows={1}
                 disabled={sending}
-            />
-            <button className="send-btn" onClick={handleSendMessage} disabled={sending}>
+              />
+              <button className="send-btn" onClick={handleSendMessage} disabled={sending}>
                 <Send size={20} />
-            </button>
+              </button>
             </div>
           </>
         )}
