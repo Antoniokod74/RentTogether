@@ -21,6 +21,7 @@ const ChatPage = () => {
   
   // WebSocket
   const socketRef = useRef(null);
+  const socketInitialized = useRef(false);
   const [socketConnected, setSocketConnected] = useState(false);
 
   // Определяем мобильное разрешение
@@ -32,14 +33,38 @@ const ChatPage = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Блокировка скролла body на мобильных при открытом чате
+  useEffect(() => {
+    if (isMobileView && selectedChat) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    };
+  }, [isMobileView, selectedChat]);
+
   // Подключение к WebSocket
   useEffect(() => {
     const authToken = localStorage.getItem('token');
-    if (!authToken) return;
+    if (!authToken || socketInitialized.current) return;
+    
+    socketInitialized.current = true;
     
     socketRef.current = io('/', {
       auth: { token: authToken },
-      transports: ['websocket']
+      transports: ['websocket'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000
     });
     
     socketRef.current.on('connect', () => {
@@ -47,15 +72,18 @@ const ChatPage = () => {
       setSocketConnected(true);
     });
     
+    socketRef.current.on('disconnect', () => {
+      console.log('📡 WebSocket disconnected');
+      setSocketConnected(false);
+    });
+    
     socketRef.current.on('new_message', (data) => {
       console.log('📩 Новое сообщение:', data);
       
-      // Если это сообщение для текущего открытого чата
       if (selectedChat && selectedChat.id === data.chatId) {
         setMessages(prev => [...prev, data.message]);
       }
       
-      // Обновляем последнее сообщение в списке чатов
       setChats(prev => prev.map(chat =>
         chat.id === data.chatId
           ? { 
@@ -69,7 +97,6 @@ const ChatPage = () => {
     
     socketRef.current.on('message_sent', (message) => {
       console.log('✅ Сообщение отправлено:', message);
-      // Обновляем сообщение с реальным ID (если нужно)
       setMessages(prev => prev.map(msg => 
         msg.id === message.tempId ? { ...message, tempId: undefined } : msg
       ));
@@ -82,6 +109,7 @@ const ChatPage = () => {
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
+        socketInitialized.current = false;
       }
     };
   }, [selectedChat]);
@@ -144,18 +172,16 @@ const ChatPage = () => {
     }
   };
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = () => {
     if (!messageInput.trim() || !selectedChat || sending) return;
 
     const text = messageInput.trim();
     setMessageInput('');
     setSending(true);
 
-    // Отправляем через WebSocket
     if (socketConnected && socketRef.current) {
       const tempId = Date.now();
       
-      // Оптимистичное обновление UI
       const tempMessage = {
         id: tempId,
         sender_id: user?.id,
@@ -165,7 +191,6 @@ const ChatPage = () => {
       };
       setMessages(prev => [...prev, tempMessage]);
       
-      // Обновляем последнее сообщение в списке чатов
       setChats(prev => prev.map(chat =>
         chat.id === selectedChat.id
           ? { ...chat, last_message: text, last_message_time: new Date().toISOString() }
@@ -181,37 +206,34 @@ const ChatPage = () => {
       
       setSending(false);
     } else {
-      // Fallback на REST API (если WebSocket не подключился)
-      try {
-        const response = await fetch(`/api/chats/${selectedChat.id}/messages`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ message: text })
-        });
-
-        if (response.ok) {
-          const newMessage = await response.json();
+      // Fallback на REST API
+      fetch(`/api/chats/${selectedChat.id}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ message: text })
+      })
+        .then(response => {
+          if (response.ok) return response.json();
+          throw new Error('Ошибка отправки');
+        })
+        .then(newMessage => {
           setMessages(prev => [...prev, newMessage]);
-          
-          // Обновляем последнее сообщение в списке чатов
           setChats(prev => prev.map(chat =>
             chat.id === selectedChat.id
               ? { ...chat, last_message: text, last_message_time: new Date().toISOString() }
               : chat
           ));
-        } else {
+        })
+        .catch(error => {
+          console.error('Ошибка:', error);
           setMessageInput(text);
-          console.error('Ошибка отправки');
-        }
-      } catch (error) {
-        console.error('Ошибка:', error);
-        setMessageInput(text);
-      } finally {
-        setSending(false);
-      }
+        })
+        .finally(() => {
+          setSending(false);
+        });
     }
   };
 
