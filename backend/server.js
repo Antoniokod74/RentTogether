@@ -394,7 +394,7 @@ app.get('/api/cars/:id', async (req, res) => {
         id, brand, model, year, transmission, fuel_type, 
         seats, doors, daily_price, color, engine_capacity,
         horsepower, fuel_consumption, description, is_available,
-        license_plate, vin, category, address
+        license_plate, vin, category, address, owner_id
       FROM cars 
       WHERE id = $1`,
       [id]
