@@ -8,6 +8,7 @@ import Profile from './pages/Auth/Profile';
 import './App.css';
 import CarDetails from './pages/Catalog/CarDetails';
 import AddCar from './pages/Catalog/AddCar';
+import ChatPage from './pages/Chat/ChatPage';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/catalog" element={<Catalog />} />
         <Route path="/car/:id" element={<CarDetails />} />
         <Route path="/add-car" element={<AddCar />} />
+        <Route path="/chat" element={<ChatPage />} />
       </Routes>
     </div>
   );

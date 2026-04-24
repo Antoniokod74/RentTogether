@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, LogOut, Plus } from 'lucide-react';
+import { User, LogOut, Plus, MessageCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import ReviewsModal from './ReviewsModal';
 import './Header.css';
@@ -47,6 +47,11 @@ const Header = () => {
 
   const handleCarsClick = () => {
     navigate('/catalog');
+    setIsMenuOpen(false);
+  };
+
+  const handleChatClick = () => {
+    navigate('/chat');
     setIsMenuOpen(false);
   };
 
@@ -124,6 +129,7 @@ const Header = () => {
           <nav className={`nav ${isMenuOpen ? 'nav-open' : ''}`}>
             <button className="nav-link" onClick={handleHowItWorksClick}>Как работает</button>
             <button className="nav-link" onClick={handleCarsClick}>Автомобили</button>
+            <button className="nav-link" onClick={handleChatClick}>Чат</button>
             {user && <button className="nav-link" onClick={handleAddCarClick}>Сдать авто</button>}
             <button className="nav-link" onClick={handleReviewsClick}>Отзывы</button>
             <button className="nav-link" onClick={handleContactsClick}>Контакты</button>
