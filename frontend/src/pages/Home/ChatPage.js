@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Send } from 'lucide-react';
+import { Send, ArrowLeft } from 'lucide-react';
 import io from 'socket.io-client';
 import './ChatPage.css';
 
 const ChatPage = () => {
   const { user, token } = useAuth();
   const navigate = useNavigate();
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const [selectedChat, setSelectedChat] = useState(null);
   const [messageInput, setMessageInput] = useState('');
@@ -18,6 +20,16 @@ const ChatPage = () => {
 
   const messagesEndRef = useRef(null);
   const socketRef = useRef(null);
+
+  /* ================= RESPONSIVE ================= */
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   /* ================= SOCKET ================= */
   useEffect(() => {
@@ -72,11 +84,8 @@ const ChatPage = () => {
       const res = await fetch('/api/chats', {
         headers: { Authorization: `Bearer ${token}` }
       });
-
       const data = await res.json();
       setChats(data);
-    } catch (e) {
-      console.error(e);
     } finally {
       setLoading(false);
     }
@@ -87,7 +96,6 @@ const ChatPage = () => {
       const res = await fetch(`/api/chats/${chatId}/messages`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-
       const data = await res.json();
       setMessages(data);
     } catch (e) {
@@ -112,18 +120,6 @@ const ChatPage = () => {
 
     setMessages(prev => [...prev, tempMessage]);
 
-    setChats(prev =>
-      prev.map(chat =>
-        chat.id === selectedChat.id
-          ? {
-              ...chat,
-              last_message: text,
-              last_message_time: new Date().toISOString()
-            }
-          : chat
-      )
-    );
-
     socketRef.current?.emit('send_message', {
       chatId: selectedChat.id,
       message: text,
@@ -133,51 +129,47 @@ const ChatPage = () => {
     setTimeout(() => setSending(false), 200);
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
   };
 
-  /* ================= HELPERS ================= */
-  const formatTime = (time) => {
-    if (!time) return '';
-    return new Date(time).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  const formatTime = (t) =>
+    t
+      ? new Date(t).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      : '';
 
-  /* ================= UI ================= */
-  return (
-    <div className="chat-page">
-      <div className="chat-container desktop">
+  /* ================= MOBILE UI ================= */
+  if (isMobile) {
+    return (
+      <div className="chat-page">
 
-        {/* ===== SIDEBAR ===== */}
-        <div className="chat-list">
-          <div className="chat-list-header">
-            <h2>Чаты</h2>
-            <button
-              className="new-chat-btn"
-              onClick={() => navigate('/users')}
-            >
-              Новый чат
-            </button>
-          </div>
+        {!selectedChat ? (
+          /* ===== CHAT LIST MOBILE ===== */
+          <div className="chat-list">
 
-          <div className="chat-list-items">
-            {loading ? (
-              <div className="chat-empty">Загрузка...</div>
-            ) : chats.length === 0 ? (
-              <div className="chat-empty">Нет диалогов</div>
-            ) : (
-              chats.map(chat => (
+            <div className="chat-list-header">
+              <h2>Чаты</h2>
+              <button
+                className="new-chat-btn"
+                onClick={() => navigate('/users')}
+              >
+                +
+              </button>
+            </div>
+
+            <div className="chat-list-items">
+              {loading ? (
+                <div className="chat-empty">Загрузка...</div>
+              ) : chats.map(chat => (
                 <div
                   key={chat.id}
-                  className={`chat-list-item ${
-                    selectedChat?.id === chat.id ? 'active' : ''
-                  }`}
+                  className="chat-list-item"
                   onClick={() => setSelectedChat(chat)}
                 >
                   <div className="avatar-placeholder">
@@ -193,25 +185,126 @@ const ChatPage = () => {
                     </div>
                   </div>
                 </div>
-              ))
-            )}
+              ))}
+            </div>
+
+          </div>
+        ) : (
+          /* ===== CHAT SCREEN MOBILE ===== */
+          <div className="chat-area">
+
+            {/* HEADER */}
+            <div className="chat-header">
+              <button onClick={() => setSelectedChat(null)}>
+                <ArrowLeft size={18} />
+              </button>
+
+              <h3>
+                {selectedChat.first_name} {selectedChat.last_name}
+              </h3>
+            </div>
+
+            {/* MESSAGES */}
+            <div className="chat-messages">
+              {messages.map(msg => (
+                <div
+                  key={msg.id}
+                  className={`message ${
+                    msg.sender_id === user.id
+                      ? 'message-own'
+                      : 'message-other'
+                  }`}
+                >
+                  <div className="message-bubble">
+                    {msg.message}
+                    <div className="message-time">
+                      {formatTime(msg.created_at)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* INPUT */}
+            <div className="chat-input-area">
+              <textarea
+                className="chat-input"
+                placeholder="Сообщение..."
+                value={messageInput}
+                onChange={(e) => {
+                  setMessageInput(e.target.value);
+                  e.target.style.height = 'auto';
+                  e.target.style.height =
+                    e.target.scrollHeight + 'px';
+                }}
+                onKeyDown={handleKeyDown}
+              />
+
+              <button
+                className="send-btn"
+                onClick={handleSendMessage}
+                disabled={!messageInput.trim() || sending}
+              >
+                <Send size={16} />
+              </button>
+            </div>
+
+          </div>
+        )}
+
+      </div>
+    );
+  }
+
+  /* ================= DESKTOP ================= */
+  return (
+    <div className="chat-page">
+      <div className="chat-container desktop">
+
+        {/* SIDEBAR */}
+        <div className="chat-list">
+          <div className="chat-list-header">
+            <h2>Чаты</h2>
+            <button onClick={() => navigate('/users')}>
+              Новый чат
+            </button>
+          </div>
+
+          <div className="chat-list-items">
+            {chats.map(chat => (
+              <div
+                key={chat.id}
+                className="chat-list-item"
+                onClick={() => setSelectedChat(chat)}
+              >
+                <div className="avatar-placeholder">
+                  {chat.first_name?.[0] || 'U'}
+                </div>
+
+                <div>
+                  <div className="chat-name">
+                    {chat.first_name} {chat.last_name}
+                  </div>
+                  <div className="chat-last-message">
+                    {chat.last_message}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* ===== CHAT ===== */}
+        {/* CHAT */}
         <div className="chat-area">
-          {!selectedChat ? (
-            <div className="chat-empty">Выберите чат</div>
-          ) : (
+          {selectedChat ? (
             <>
-              {/* HEADER */}
               <div className="chat-header">
                 <h3>
                   {selectedChat.first_name} {selectedChat.last_name}
                 </h3>
               </div>
 
-              {/* MESSAGES */}
               <div className="chat-messages">
                 {messages.map(msg => (
                   <div
@@ -224,42 +317,33 @@ const ChatPage = () => {
                   >
                     <div className="message-bubble">
                       {msg.message}
-                      <div className="message-time">
-                        {formatTime(msg.created_at)}
-                      </div>
                     </div>
                   </div>
                 ))}
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* INPUT */}
               <div className="chat-input-area">
                 <textarea
                   className="chat-input"
-                  placeholder="Сообщение..."
                   value={messageInput}
-                  onChange={(e) => {
-                    setMessageInput(e.target.value);
-                    e.target.style.height = "auto";
-                    e.target.style.height =
-                      e.target.scrollHeight + "px";
-                  }}
-                  onKeyDown={handleKeyPress}
-                  rows={1}
+                  onChange={(e) => setMessageInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
                 />
 
                 <button
                   className="send-btn"
                   onClick={handleSendMessage}
-                  disabled={!messageInput.trim() || sending}
                 >
                   <Send size={16} />
                 </button>
               </div>
             </>
+          ) : (
+            <div className="chat-empty">Выберите чат</div>
           )}
         </div>
+
       </div>
     </div>
   );
