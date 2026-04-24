@@ -604,3 +604,92 @@
   background: #334155;
   border-radius: 3px;
 }
+
+/* Специально для вертикальной ориентации на мобильных */
+@media (max-width: 768px) and (orientation: portrait) {
+  .chat-container.mobile .chat-header {
+    padding: 8px 12px;
+  }
+
+  .chat-container.mobile .chat-header-details h3 {
+    font-size: 0.9rem;
+  }
+
+  .chat-container.mobile .chat-messages {
+    padding: 10px;
+  }
+
+  .message {
+    max-width: 90%;
+  }
+
+  .message-bubble {
+    padding: 6px 10px;
+  }
+
+  .message-text {
+    font-size: 0.8rem;
+  }
+
+  .chat-container.mobile .chat-input-area {
+    padding: 8px 12px;
+  }
+
+  .chat-container.mobile .chat-input {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
+  .chat-container.mobile .send-btn {
+    padding: 6px 12px;
+  }
+
+  .attach-btn, .emoji-btn {
+    padding: 6px;
+  }
+
+  .attach-btn svg, .emoji-btn svg, .send-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .back-btn-chat svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .avatar-placeholder {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Для очень маленьких экранов в вертикальной ориентации (iPhone SE и подобные) */
+@media (max-width: 380px) and (orientation: portrait) {
+  .chat-container.mobile .chat-header {
+    padding: 6px 10px;
+  }
+
+  .chat-container.mobile .chat-messages {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .chat-container.mobile .chat-input-area {
+    padding: 6px 10px;
+  }
+
+  .message-bubble {
+    padding: 5px 8px;
+  }
+
+  .message-text {
+    font-size: 0.75rem;
+  }
+
+  .chat-container.mobile .chat-input {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+}
