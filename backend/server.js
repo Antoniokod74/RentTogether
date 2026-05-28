@@ -11,7 +11,7 @@ import PDFDocument from 'pdfkit';
 import expressRouterDiagram from 'express-router-diagram'; // добавлено для карты маршрутов
 import { Server } from 'socket.io';
 import http from 'http';
-import { AlertCircle } from 'lucide-react';
+
 
 dotenv.config();
 
