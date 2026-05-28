@@ -355,100 +355,133 @@ const CarDetails = () => {
     return days * car.daily_price;
   };
 
-  const openBookingModal = () => {
-    if (!selectedStartDate || !selectedEndDate) {
-      alert('Пожалуйста, выберите даты аренды');
-      return;
-    }
+  const openBookingModal = async () => {
+  if (!selectedStartDate || !selectedEndDate) {
+    alert('Пожалуйста, выберите даты аренды');
+    return;
+  }
+  
+  if (!isDateRangeAvailable(selectedStartDate, selectedEndDate)) {
+    alert('В выбранном диапазоне есть занятые даты. Пожалуйста, выберите другие даты.');
+    return;
+  }
+  
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Пожалуйста, войдите в аккаунт для бронирования');
+    navigate('/login');
+    return;
+  }
+  
+  try {
+    const response = await fetch('/api/users/profile/check', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
     
-    if (!isDateRangeAvailable(selectedStartDate, selectedEndDate)) {
-      alert('В выбранном диапазоне есть занятые даты. Пожалуйста, выберите другие даты.');
+    if (response.ok) {
+      const data = await response.json();
+      
+      if (!data.isComplete) {
+        const missingFieldsList = data.missingFields.join(', ');
+        if (window.confirm(`Для бронирования автомобиля необходимо заполнить профиль.\n\nОтсутствуют поля: ${missingFieldsList}\n\nПерейти в профиль для заполнения?`)) {
+          navigate('/profile');
+        }
+        return;
+      }
+    } else if (response.status === 401) {
+      alert('Сессия истекла. Пожалуйста, войдите заново.');
+      navigate('/login');
       return;
     }
     
     setIsBookingModalOpen(true);
-  };
-
-  const closeBookingModal = () => {
-    setIsBookingModalOpen(false);
-    setPaymentMethod('card');
-    setCardNumber('');
-    setCardExpiry('');
-    setCardCvc('');
-    setPhoneNumber('');
-    setIsSubmitting(false);
-    setBookingSuccess(false);
-  };
-
-  const handleBookingSubmit = async (e) => {
-    e.preventDefault();
     
-    if (!selectedStartDate || !selectedEndDate) {
-      alert('Пожалуйста, выберите даты аренды');
-      return;
+  } catch (error) {
+    console.error('Ошибка проверки профиля:', error);
+    alert('Ошибка проверки профиля. Попробуйте позже.');
+  }
+};
+
+const closeBookingModal = () => {
+  setIsBookingModalOpen(false);
+  setPaymentMethod('card');
+  setCardNumber('');
+  setCardExpiry('');
+  setCardCvc('');
+  setPhoneNumber('');
+  setIsSubmitting(false);
+  setBookingSuccess(false);
+};
+
+const handleBookingSubmit = async (e) => {
+  e.preventDefault();
+  
+  if (!selectedStartDate || !selectedEndDate) {
+    alert('Пожалуйста, выберите даты аренды');
+    return;
+  }
+
+  if (!isDateRangeAvailable(selectedStartDate, selectedEndDate)) {
+    alert('К сожалению, выбранные даты стали недоступны. Пожалуйста, выберите другие даты.');
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    const start = normalizeDate(selectedStartDate);
+    const end = normalizeDate(selectedEndDate);
+    const totalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+    const totalPrice = totalDays * car.daily_price;
+
+    const bookingData = {
+      car_id: car.id,
+      start_date: start.toISOString().split('T')[0],
+      end_date: end.toISOString().split('T')[0],
+      total_days: totalDays,
+      total_price: totalPrice,
+      payment_intent_id: `temp_${Date.now()}`
+    };
+
+    const token = localStorage.getItem('token');
+    
+    const response = await fetch('/api/bookings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(bookingData)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Ошибка бронирования');
     }
 
-    if (!isDateRangeAvailable(selectedStartDate, selectedEndDate)) {
-      alert('К сожалению, выбранные даты стали недоступны. Пожалуйста, выберите другие даты.');
-      return;
+    const result = await response.json();
+    console.log('✅ Бронирование создано:', result.booking);
+    
+    setBookingSuccess(true);
+    
+    const bookingsResponse = await fetch(`/api/cars/${id}/bookings`);
+    if (bookingsResponse.ok) {
+      const bookingsData = await bookingsResponse.json();
+      setBookings(bookingsData.bookings || []);
     }
+    
+    setTimeout(() => {
+      closeBookingModal();
+      navigate('/profile?tab=bookings');
+    }, 7000);
 
-    setIsSubmitting(true);
-
-    try {
-      const start = normalizeDate(selectedStartDate);
-      const end = normalizeDate(selectedEndDate);
-      const totalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
-      const totalPrice = totalDays * car.daily_price;
-
-      const bookingData = {
-        car_id: car.id,
-        start_date: start.toISOString().split('T')[0],
-        end_date: end.toISOString().split('T')[0],
-        total_days: totalDays,
-        total_price: totalPrice,
-        payment_intent_id: `temp_${Date.now()}`
-      };
-
-      const token = localStorage.getItem('token');
-      
-      const response = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(bookingData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Ошибка бронирования');
-      }
-
-      const result = await response.json();
-      console.log('✅ Бронирование создано:', result.booking);
-      
-      setBookingSuccess(true);
-      
-      const bookingsResponse = await fetch(`/api/cars/${id}/bookings`);
-      if (bookingsResponse.ok) {
-        const bookingsData = await bookingsResponse.json();
-        setBookings(bookingsData.bookings || []);
-      }
-      
-      setTimeout(() => {
-        closeBookingModal();
-        navigate('/profile?tab=bookings');
-      }, 7000);
-
-    } catch (error) {
-      console.error('❌ Ошибка бронирования:', error);
-      alert(`Ошибка бронирования: ${error.message}`);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  } catch (error) {
+    console.error('❌ Ошибка бронирования:', error);
+    alert(`Ошибка бронирования: ${error.message}`);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const formatCardNumber = (value) => {
     const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');

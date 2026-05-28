@@ -243,6 +243,38 @@
   text-decoration: underline;
 }
 
+.profile-warning-banner {
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid #ff6b6b;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.profile-warning-banner svg {
+  color: #ff6b6b;
+  flex-shrink: 0;
+}
+
+.profile-warning-banner strong {
+  color: #ff6b6b;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.profile-warning-banner p {
+  margin: 0;
+  color: #ff6b6b;
+  font-size: 0.9rem;
+}
+
+.profile-warning-banner ul {
+  color: #ffaaaa;
+}
+
 @media (max-width: 480px) {
   .auth-container {
     padding: 1.5rem;

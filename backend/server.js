@@ -11,6 +11,7 @@ import PDFDocument from 'pdfkit';
 import expressRouterDiagram from 'express-router-diagram'; // добавлено для карты маршрутов
 import { Server } from 'socket.io';
 import http from 'http';
+import { AlertCircle } from 'lucide-react';
 
 dotenv.config();
 
@@ -1796,6 +1797,72 @@ app.post('/api/chats', authenticateToken, async (req, res) => {
   }
 });
 // ========== КОНЕЦ КОДА ЧАТА ==========
+
+// Проверка заполненности профиля
+app.get('/api/users/profile/check', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.userId;
+    
+    const result = await pool.query(
+      `SELECT 
+        first_name, last_name, phone, date_of_birth,
+        driver_license_number, driver_license_issue_date, 
+        driver_license_expiry_date, address, passport_number
+       FROM users WHERE id = $1`,
+      [userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Пользователь не найден' });
+    }
+
+    const user = result.rows[0];
+    
+    // Список обязательных полей
+    const requiredFields = [
+      { name: 'first_name', value: user.first_name, label: 'Имя' },
+      { name: 'last_name', value: user.last_name, label: 'Фамилия' },
+      { name: 'phone', value: user.phone, label: 'Телефон' },
+      { name: 'date_of_birth', value: user.date_of_birth, label: 'Дата рождения' },
+      { name: 'driver_license_number', value: user.driver_license_number, label: 'Номер в/у' },
+      { name: 'driver_license_issue_date', value: user.driver_license_issue_date, label: 'Дата выдачи в/у' },
+      { name: 'driver_license_expiry_date', value: user.driver_license_expiry_date, label: 'Срок действия в/у' },
+      { name: 'address', value: user.address, label: 'Адрес' },
+      { name: 'passport_number', value: user.passport_number, label: 'Паспорт' }
+    ];
+    
+    const missingFields = requiredFields.filter(field => !field.value || field.value.trim() === '');
+    const isProfileComplete = missingFields.length === 0;
+    
+    res.json({
+      isComplete: isProfileComplete,
+      missingFields: missingFields.map(f => f.label),
+      profile: user
+    });
+    
+  } catch (error) {
+    console.error('❌ Profile check error:', error);
+    res.status(500).json({ error: 'Ошибка проверки профиля' });
+  }
+});
+
+const checkProfileCompleteness = async () => {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+  
+  try {
+    const response = await fetch('/api/users/profile/check', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (response.ok) {
+      const data = await response.json();
+      setMissingFields(data.missingFields || []);
+    }
+  } catch (error) {
+    console.error('Error checking profile:', error);
+  }
+};
+
 
 // ========== ДОБАВЛЕНА КАРТА МАРШРУТОВ ПЕРЕД ЗАПУСКОМ СЕРВЕРА ==========
 app.use(expressRouterDiagram({

@@ -12,7 +12,7 @@ const Catalog = () => {
     search: '',
     transmission: '',
     fuel_type: '',
-    car_class: '' // ДОБАВИЛ ФИЛЬТР ПО КЛАССУ
+    car_class: ''
   });
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
   const navigate = useNavigate();
