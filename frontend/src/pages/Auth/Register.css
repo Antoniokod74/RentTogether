@@ -1,37 +1,63 @@
 .register-page {
+  min-height: 100vh;
   background: 
     linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5)),
     url('https://avatars.mds.yandex.net/i?id=0df7d8d7beb697627d8cc361d77605d1_l-10671814-images-thumbs&n=13') center/cover no-repeat;
-  background-size: 107% auto; /* Подбери подходящее значение */
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 80px; /* Учитываем высоту шапки */
 }
 
 .register-container {
   display: flex;
-  justify-content: flex-start; /* Изменено с flex-end на flex-start */
+  justify-content: flex-start;
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
+  padding: 20px;
 }
 
 .auth-container {
   background: rgba(17, 17, 17, 0.95);
   border: 1px solid #333;
   border-radius: 25px;
-  padding: 2rem; /* Уменьшено с 2.5rem */
+  padding: 2rem;
   width: 100%;
-  max-width: 345px; /* Уменьшено с 450px */
+  max-width: 380px;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  margin-left: 2rem; /* Добавлен отступ слева */
+  margin-left: 2rem;
+  /* Добавляем скролл если контент не влезает */
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
 }
+
+/* Кастомный скролл для auth-container */
+.auth-container::-webkit-scrollbar {
+  width: 5px;
+}
+
+.auth-container::-webkit-scrollbar-track {
+  background: #222;
+  border-radius: 10px;
+}
+
+.auth-container::-webkit-scrollbar-thumb {
+  background: #00ff88;
+  border-radius: 10px;
+}
+
+/* Остальные стили без изменений... */
 
 .auth-header {
   text-align: center;
-  margin-bottom: 1.5rem; /* Уменьшено с 2rem */
+  margin-bottom: 1.5rem;
 }
 
 .auth-title {
-  font-size: 1.75rem; /* Уменьшено с 2rem */
+  font-size: 1.75rem;
   font-weight: bold;
   color: #fff;
   margin-bottom: 0.5rem;
@@ -39,25 +65,25 @@
 
 .auth-subtitle {
   color: #ccc;
-  font-size: 0.9rem; /* Уменьшено с 1rem */
+  font-size: 0.9rem;
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem; /* Уменьшено с 1.2rem */
+  gap: 1rem;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem; /* Уменьшено с 0.5rem */
+  gap: 0.4rem;
 }
 
 .form-label {
   color: #fff;
   font-weight: 500;
-  font-size: 0.85rem; /* Уменьшено с 0.9rem */
+  font-size: 0.85rem;
 }
 
 .form-input-wrapper {
@@ -67,12 +93,12 @@
 
 .form-input {
   width: 100%;
-  padding: 0.7rem 0.7rem 0.7rem 2.2rem; /* Уменьшено */
+  padding: 0.7rem 0.7rem 0.7rem 2.2rem;
   background: #222;
   border: 1px solid #333;
   border-radius: 8px;
   color: #fff;
-  font-size: 0.85rem; /* Уменьшено с 0.9rem */
+  font-size: 0.85rem;
   transition: border-color 0.3s ease;
   box-sizing: border-box;
 }
@@ -88,12 +114,12 @@
 
 .input-icon {
   position: absolute;
-  left: 0.7rem; /* Уменьшено с 0.8rem */
+  left: 0.7rem;
   top: 50%;
   transform: translateY(-50%);
   color: #666;
-  width: 14px; /* Уменьшено с 16px */
-  height: 14px; /* Уменьшено с 16px */
+  width: 14px;
+  height: 14px;
 }
 
 .password-input {
@@ -103,7 +129,7 @@
 
 .password-toggle {
   position: absolute;
-  right: 0.7rem; /* Уменьшено с 0.8rem */
+  right: 0.7rem;
   top: 50%;
   transform: translateY(-50%);
   background: none;
@@ -111,24 +137,24 @@
   color: #ccc;
   cursor: pointer;
   padding: 0;
-  width: 18px; /* Уменьшено с 20px */
-  height: 18px; /* Уменьшено с 20px */
+  width: 18px;
+  height: 18px;
 }
 
 .checkbox-group {
   flex-direction: row;
   align-items: flex-start;
-  gap: 0.6rem; /* Уменьшено с 0.8rem */
-  margin-top: 0.3rem; /* Уменьшено с 0.5rem */
+  gap: 0.6rem;
+  margin-top: 0.3rem;
 }
 
 .checkbox-input {
-  margin-top: 0.1rem; /* Уменьшено с 0.2rem */
+  margin-top: 0.1rem;
   transform: scale(1);
 }
 
 .checkbox-label {
-  font-size: 0.7rem; /* Уменьшено с 0.75rem */
+  font-size: 0.7rem;
   color: #ccc;
   line-height: 1.3;
 }
@@ -147,16 +173,16 @@
 }
 
 .submit-btn {
-  padding: 0.7rem; /* Уменьшено с 0.8rem */
+  padding: 0.7rem;
   background: #00ff88;
   color: #000;
   border: none;
   border-radius: 8px;
-  font-size: 0.85rem; /* Уменьшено с 0.9rem */
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.3s ease;
-  margin-top: 0.3rem; /* Уменьшено с 0.5rem */
+  margin-top: 0.3rem;
   width: 100%;
 }
 
@@ -173,7 +199,7 @@
 .auth-divider {
   display: flex;
   align-items: center;
-  margin: 1rem 0; /* Уменьшено с 1.2rem */
+  margin: 1rem 0;
   color: #666;
 }
 
@@ -186,22 +212,22 @@
 }
 
 .auth-divider span {
-  padding: 0 0.6rem; /* Уменьшено с 0.8rem */
-  font-size: 0.75rem; /* Уменьшено с 0.8rem */
+  padding: 0 0.6rem;
+  font-size: 0.75rem;
 }
 
 .social-buttons {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem; /* Уменьшено с 0.8rem */
+  gap: 0.6rem;
 }
 
 .social-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem; /* Уменьшено с 0.6rem */
-  padding: 0.7rem; /* Уменьшено с 0.8rem */
+  gap: 0.5rem;
+  padding: 0.7rem;
   background: #222;
   border: 1px solid #333;
   border-radius: 8px;
@@ -209,7 +235,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 0.85rem; /* Уменьшено с 0.9rem */
+  font-size: 0.85rem;
   width: 100%;
 }
 
@@ -219,37 +245,37 @@
 }
 
 .social-icon {
-  width: 14px; /* Уменьшено с 16px */
-  height: 14px; /* Уменьшено с 16px */
+  width: 14px;
+  height: 14px;
 }
 
 .auth-error {
   background: rgba(255, 0, 0, 0.1);
   border: 1px solid rgba(255, 0, 0, 0.3);
   border-radius: 6px;
-  padding: 0.7rem; /* Уменьшено с 0.8rem */
+  padding: 0.7rem;
   color: #ff4444;
-  font-size: 0.75rem; /* Уменьшено с 0.8rem */
+  font-size: 0.75rem;
   text-align: center;
-  margin-bottom: 0.4rem; /* Уменьшено с 0.5rem */
+  margin-bottom: 0.4rem;
 }
 
 .auth-success {
   background: rgba(0, 255, 136, 0.1);
   border: 1px solid rgba(0, 255, 136, 0.3);
   border-radius: 6px;
-  padding: 0.7rem; /* Уменьшено с 0.8rem */
+  padding: 0.7rem;
   color: #00ff88;
-  font-size: 0.75rem; /* Уменьшено с 0.8rem */
+  font-size: 0.75rem;
   text-align: center;
-  margin-bottom: 0.4rem; /* Уменьшено с 0.5rem */
+  margin-bottom: 0.4rem;
 }
 
 .auth-footer {
   text-align: center;
-  margin-top: 1.2rem; /* Уменьшено с 1.5rem */
+  margin-top: 1.2rem;
   color: #ccc;
-  font-size: 0.75rem; /* Уменьшено с 0.8rem */
+  font-size: 0.75rem;
 }
 
 .auth-link {
@@ -262,44 +288,86 @@
   text-decoration: underline;
 }
 
+/* Мобильная версия */
 @media (max-width: 768px) {
   .register-page {
     justify-content: center;
-    padding: 80px 1rem 1rem;
-    background: 
-      linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
-      url('https://images.unsplash.com/photo-1486496572940-2bb2341fdbdf?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80') center/cover no-repeat;
+    align-items: flex-start;
+    padding-top: 70px; /* Уменьшенный отступ для мобильных */
   }
   
   .register-container {
     justify-content: center;
+    padding: 15px;
   }
   
   .auth-container {
-    max-width: 350px; /* Уменьшено с 400px */
-    padding: 1.5rem; /* Уменьшено с 2rem */
+    max-width: 100%;
+    padding: 1.5rem;
     background: rgba(17, 17, 17, 0.98);
-    margin-left: 0; /* Убрано на мобильных */
+    margin-left: 0;
+    max-height: calc(100vh - 100px);
+  }
+  
+  .auth-title {
+    font-size: 1.5rem;
+  }
+  
+  .auth-subtitle {
+    font-size: 0.8rem;
+  }
+  
+  .form-label {
+    font-size: 0.8rem;
+  }
+  
+  .form-input {
+    padding: 0.6rem 0.6rem 0.6rem 2rem;
+    font-size: 0.8rem;
+  }
+  
+  .input-icon {
+    left: 0.6rem;
+    width: 13px;
+    height: 13px;
+  }
+  
+  .submit-btn {
+    padding: 0.6rem;
+    font-size: 0.8rem;
   }
 }
 
 @media (max-width: 480px) {
   .auth-container {
-    padding: 1.2rem; /* Уменьшено с 1.5rem */
+    padding: 1.2rem;
+    max-height: calc(100vh - 90px);
   }
   
   .auth-title {
-    font-size: 1.4rem; /* Уменьшено с 1.5rem */
+    font-size: 1.3rem;
+  }
+  
+  .auth-form {
+    gap: 0.8rem;
   }
   
   .form-input {
-    padding: 0.6rem 0.6rem 0.6rem 2rem; /* Уменьшено */
-    font-size: 0.8rem; /* Уменьшено с 0.85rem */
+    padding: 0.55rem 0.55rem 0.55rem 1.8rem;
+    font-size: 0.75rem;
   }
   
   .input-icon {
-    left: 0.6rem; /* Уменьшено с 0.7rem */
-    width: 12px; /* Уменьшено с 14px */
-    height: 12px; /* Уменьшено с 14px */
+    width: 12px;
+    height: 12px;
+  }
+  
+  .checkbox-label {
+    font-size: 0.65rem;
+  }
+  
+  .social-btn {
+    padding: 0.6rem;
+    font-size: 0.8rem;
   }
 }
