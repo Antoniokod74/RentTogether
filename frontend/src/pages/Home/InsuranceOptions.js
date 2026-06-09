@@ -144,7 +144,7 @@ const InsuranceOptions = () => {
                 </div>
                 <div className="contact-details">
                   <span className="contact-label">Телефон</span>
-                  <a href="tel:+79991234567" className="contact-value">+7 (999) 123-45-67</a>
+                  <a href="tel:+73512003040" className="contact-value">+7 (999) 123-45-67</a>
                 </div>
               </div>
 
