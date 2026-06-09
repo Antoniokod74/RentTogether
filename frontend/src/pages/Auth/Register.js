@@ -270,7 +270,7 @@ const Register = () => {
                 className="social-btn"
                 onClick={() => handleSocialRegister('Google')}
               >
-                <img src="/frontend//icons/GoogleLogo.png" alt="Google" className="social-icon" />
+                <img src="/icons/GoogleLogo.png" alt="Google" className="social-icon" />
                 Продолжить с Google
               </button>
               <button
@@ -278,7 +278,7 @@ const Register = () => {
                 className="social-btn"
                 onClick={() => handleSocialRegister('VK')}
               >
-                <img src="/frontend/icons/VkLogo.png" alt="VK" className="social-icon" />
+                <img src="/icons/VkLogo.png" alt="VK" className="social-icon" />
                 Продолжить с VK
               </button>
             </div>
