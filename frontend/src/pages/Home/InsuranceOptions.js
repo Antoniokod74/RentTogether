@@ -144,7 +144,7 @@ const InsuranceOptions = () => {
                 </div>
                 <div className="contact-details">
                   <span className="contact-label">Телефон</span>
-                  <a href="tel:+73512003040" className="contact-value">+7 (999) 123-45-67</a>
+                  <a href="tel:+73512003040" className="contact-value">+7 (351) 200-30-40</a>
                 </div>
               </div>
 
@@ -154,7 +154,7 @@ const InsuranceOptions = () => {
                 </div>
                 <div className="contact-details">
                   <span className="contact-label">Email</span>
-                  <a href="mailto:info@renttogether.ru" className="contact-value">info@renttogether.ru</a>
+                  <a href="mailto:support@renttogether.ru" className="contact-value">support@renttogether.ru</a>
                 </div>
               </div>
 
