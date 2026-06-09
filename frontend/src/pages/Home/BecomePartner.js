@@ -1,8 +1,14 @@
-import React from 'react';
-import { Shield, UserCheck, CreditCard, CheckCircle, Star } from 'lucide-react';
+import React, { useState } from 'react';
+import { Shield, UserCheck, CreditCard, CheckCircle, Star, X, Calculator, DollarSign } from 'lucide-react';
 import './BecomePartner.css';
 
 const BecomePartner = () => {
+  const [isCalculatorModalOpen, setIsCalculatorModalOpen] = useState(false);
+  const [days, setDays] = useState('');
+  const [dailyPrice, setDailyPrice] = useState('');
+  const [totalAmount, setTotalAmount] = useState(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+
   const benefits = [
     {
       id: 1,
@@ -33,112 +39,222 @@ const BecomePartner = () => {
     { value: "4.8/5", label: "Рейтинг партнеров" }
   ];
 
+  const handleCalculate = () => {
+    const daysNum = parseInt(days);
+    const priceNum = parseInt(dailyPrice);
+    
+    if (isNaN(daysNum) || isNaN(priceNum) || daysNum <= 0 || priceNum <= 0) {
+      alert('Пожалуйста, введите корректные значения (положительные числа)');
+      return;
+    }
+    
+    setIsAnimating(true);
+    const result = daysNum * priceNum;
+    setTotalAmount(result);
+    
+    setTimeout(() => setIsAnimating(false), 500);
+  };
+
+  const handleClear = () => {
+    setDays('');
+    setDailyPrice('');
+    setTotalAmount(null);
+  };
+
+  const handleBecomePartner = () => {
+    // Здесь можно добавить логику перехода на страницу регистрации партнера
+    alert('Функция регистрации партнера будет доступна в ближайшее время!');
+  };
+
   return (
-    <section className="become-partner">
-      <div className="container">
-        <div className="partner-header">
-          <h2>Сдавайте свой автомобиль и зарабатывайте</h2>
-          <p className="partner-subtitle">
-            Превратите свой автомобиль в источник дохода!<br />
-            Присоединяйтесь к нашей платформе и зарабатывайте, когда ваша машина простаивает.
-          </p>
-        </div>
-
-        <div className="partner-content">
-          <div className="benefits-section">
-            <div className="benefits-grid">
-              {benefits.map((benefit) => (
-                <div key={benefit.id} className="benefit-card">
-                  <div className="benefit-icon-wrapper">
-                    {benefit.icon}
-                  </div>
-                  <div className="benefit-content">
-                    <h3 className="benefit-title">{benefit.title}</h3>
-                    <p className="benefit-description">{benefit.description}</p>
-                    <div className="benefit-feature">
-                      <CheckCircle className="feature-check" />
-                      <span>{benefit.feature}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="earn-steps">
-              <h3>Как начать зарабатывать</h3>
-              <div className="steps">
-                <div className="step">
-                  <div className="step-number">1</div>
-                  <div className="step-content">
-                    <h4>Регистрация</h4>
-                    <p>Заполните простую форму и загрузите документы на автомобиль</p>
-                  </div>
-                </div>
-                <div className="step">
-                  <div className="step-number">2</div>
-                  <div className="step-content">
-                    <h4>Проверка</h4>
-                    <p>Наши специалисты проведут техосмотр и фотосессию вашего авто</p>
-                  </div>
-                </div>
-                <div className="step">
-                  <div className="step-number">3</div>
-                  <div className="step-content">
-                    <h4>Заработок</h4>
-                    <p>Получайте заявки от арендаторов и зарабатывайте деньги</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+    <>
+      <section className="become-partner">
+        <div className="container">
+          <div className="partner-header">
+            <h2>Сдавайте свой автомобиль и зарабатывайте</h2>
+            <p className="partner-subtitle">
+              Превратите свой автомобиль в источник дохода!<br />
+              Присоединяйтесь к нашей платформе и зарабатывайте, когда ваша машина простаивает.
+            </p>
           </div>
 
-          <div className="partner-sidebar">
-            <div className="income-card">
-              <h3>Стабильный доход</h3>
-              <p className="income-amount">Зарабатывайте до 50,000₽ в месяц</p>
-              <p className="income-note">сдавая свой автомобиль в аренду</p>
-              
-              <div className="schedule-info">
-                <h4>Гибкий график</h4>
-                <p>Выбирайте удобное время для сдачи авто в аренду</p>
-                <div className="availability">
-                  <CheckCircle className="availability-check" />
-                  <span>24/7 доступность</span>
-                </div>
-              </div>
-
-              <button className="partner-btn primary">
-                Стать партнером
-              </button>
-              <button className="partner-btn secondary">
-                Рассчитать доход
-              </button>
-            </div>
-
-            <div className="stats-card">
-              <h3>Наши партнеры уже зарабатывают</h3>
-              <div className="stats-grid">
-                {stats.map((stat, index) => (
-                  <div key={index} className="stat-item">
-                    <div className="stat-value">{stat.value}</div>
-                    <div className="stat-label">{stat.label}</div>
+          <div className="partner-content">
+            <div className="benefits-section">
+              <div className="benefits-grid">
+                {benefits.map((benefit) => (
+                  <div key={benefit.id} className="benefit-card">
+                    <div className="benefit-icon-wrapper">
+                      {benefit.icon}
+                    </div>
+                    <div className="benefit-content">
+                      <h3 className="benefit-title">{benefit.title}</h3>
+                      <p className="benefit-description">{benefit.description}</p>
+                      <div className="benefit-feature">
+                        <CheckCircle className="feature-check" />
+                        <span>{benefit.feature}</span>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
-              <div className="rating">
-                <div className="stars">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="star-icon" fill="currentColor" />
+
+              <div className="earn-steps">
+                <h3>Как начать зарабатывать</h3>
+                <div className="steps">
+                  <div className="step">
+                    <div className="step-number">1</div>
+                    <div className="step-content">
+                      <h4>Регистрация</h4>
+                      <p>Заполните простую форму и загрузите документы на автомобиль</p>
+                    </div>
+                  </div>
+                  <div className="step">
+                    <div className="step-number">2</div>
+                    <div className="step-content">
+                      <h4>Проверка</h4>
+                      <p>Наши специалисты проведут техосмотр и фотосессию вашего авто</p>
+                    </div>
+                  </div>
+                  <div className="step">
+                    <div className="step-number">3</div>
+                    <div className="step-content">
+                      <h4>Заработок</h4>
+                      <p>Получайте заявки от арендаторов и зарабатывайте деньги</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="partner-sidebar">
+              <div className="income-card">
+                <h3>Стабильный доход</h3>
+                <p className="income-amount">Зарабатывайте до 50,000₽ в месяц</p>
+                <p className="income-note">сдавая свой автомобиль в аренду</p>
+                
+                <div className="schedule-info">
+                  <h4>Гибкий график</h4>
+                  <p>Выбирайте удобное время для сдачи авто в аренду</p>
+                  <div className="availability">
+                    <CheckCircle className="availability-check" />
+                    <span>24/7 доступность</span>
+                  </div>
+                </div>
+
+                <button className="partner-btn primary" onClick={handleBecomePartner}>
+                  Стать партнером
+                </button>
+                <button className="partner-btn secondary" onClick={() => setIsCalculatorModalOpen(true)}>
+                  Рассчитать доход
+                </button>
+              </div>
+
+              <div className="stats-card">
+                <h3>Наши партнеры уже зарабатывают</h3>
+                <div className="stats-grid">
+                  {stats.map((stat, index) => (
+                    <div key={index} className="stat-item">
+                      <div className="stat-value">{stat.value}</div>
+                      <div className="stat-label">{stat.label}</div>
+                    </div>
                   ))}
                 </div>
-                <span>Рейтинг партнеров</span>
+                <div className="rating">
+                  <div className="stars">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="star-icon" fill="currentColor" />
+                    ))}
+                  </div>
+                  <span>Рейтинг партнеров</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* Модальное окно калькулятора */}
+      {isCalculatorModalOpen && (
+        <div className="calculator-modal-overlay" onClick={() => setIsCalculatorModalOpen(false)}>
+          <div className="calculator-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="calculator-close-btn" onClick={() => setIsCalculatorModalOpen(false)}>
+              <X size={24} />
+            </button>
+            
+            <div className="calculator-header">
+              <div className="calculator-icon">
+                <Calculator size={32} />
+              </div>
+              <h2>Калькулятор дохода</h2>
+              <p>Рассчитайте, сколько вы можете заработать</p>
+            </div>
+
+            <div className="calculator-body">
+              <div className="input-group">
+                <label htmlFor="days">
+                  <CalendarIcon size={18} />
+                  Количество дней аренды
+                </label>
+                <input
+                  type="number"
+                  id="days"
+                  placeholder="Например: 7"
+                  value={days}
+                  onChange={(e) => setDays(e.target.value)}
+                  min="1"
+                />
+              </div>
+
+              <div className="input-group">
+                <label htmlFor="price">
+                  <DollarSign size={18} />
+                  Стоимость аренды за сутки (₽)
+                </label>
+                <input
+                  type="number"
+                  id="price"
+                  placeholder="Например: 2000"
+                  value={dailyPrice}
+                  onChange={(e) => setDailyPrice(e.target.value)}
+                  min="1"
+                />
+              </div>
+
+              <div className="calculator-buttons">
+                <button className="calc-btn clear" onClick={handleClear}>
+                  Очистить
+                </button>
+                <button className="calc-btn calculate" onClick={handleCalculate}>
+                  Рассчитать
+                </button>
+              </div>
+
+              {totalAmount !== null && (
+                <div className={`result-card ${isAnimating ? 'animate' : ''}`}>
+                  <div className="result-icon">💰</div>
+                  <div className="result-content">
+                    <span className="result-label">Примерный доход:</span>
+                    <span className="result-amount">{totalAmount.toLocaleString()} ₽</span>
+                    <span className="result-period">за выбранный период</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
+
+// Компонент иконки календаря
+const CalendarIcon = ({ size }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+    <line x1="16" y1="2" x2="16" y2="6"></line>
+    <line x1="8" y1="2" x2="8" y2="6"></line>
+    <line x1="3" y1="10" x2="21" y2="10"></line>
+  </svg>
+);
 
 export default BecomePartner;

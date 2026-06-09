@@ -1,7 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './HowItWorks.css';
 
 const HowItWorks = () => {
+  const navigate = useNavigate();
+
   const steps = [
     {
       id: 1,
@@ -46,6 +49,10 @@ const HowItWorks = () => {
       features: ["Полная страховка", "Поддержка 24/7", "Комфортная поездка"]
     }
   ];
+
+  const handleGoToCatalog = () => {
+    navigate('/catalog');
+  };
 
   return (
     <section id="how-it-works" className="how-it-works">
@@ -93,7 +100,9 @@ const HowItWorks = () => {
               <h3>Готовы начать?</h3>
               <p>Выберите автомобиль и начните процесс аренды прямо сейчас</p>
             </div>
-            <button className="cta-button">Перейти к каталогу</button>
+            <button className="cta-button" onClick={handleGoToCatalog}>
+              Перейти к каталогу
+            </button>
           </div>
         </div>
       </div>

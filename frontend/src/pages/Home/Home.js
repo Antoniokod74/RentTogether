@@ -16,9 +16,13 @@ const Home = () => {
   };
 
   const handleLearnMore = () => {
-    document.getElementById('why-choose-us')?.scrollIntoView({ 
-      behavior: 'smooth' 
-    });
+    const element = document.getElementById('how-it-works');
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
   };
 
   return (
